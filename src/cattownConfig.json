@@ -1,5 +1,8 @@
 {
   "useCustomTheme": true,
   "debugMode": false,
-  "enableSanitization": true
+  "enableSanitization": true,
+  "LanguageNameInCode": true,
+  "IconInCode": true,
+  "CopyCodeButton": true
 }
