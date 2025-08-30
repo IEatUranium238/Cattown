@@ -1,4 +1,5 @@
 Demo/
+node_modules/
 LISANCE
 README
 *.log

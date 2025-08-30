@@ -4,10 +4,17 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "markcat-build-css": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite",
+    "cattown-build-css": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "ieaturanium238",
   "license": "MIT",
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "dompurify": "^3.2.6"
+  },
+  "devDependencies": {
+    "vite": "^7.1.3"
+  }
 }
