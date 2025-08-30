@@ -23,4 +23,4 @@ Cattown is a pure JavaScript markdown parser with built-in sanitization using DO
 
 ## License
 
-This project is lisanced MIT License.
+This project is licensed MIT License.
