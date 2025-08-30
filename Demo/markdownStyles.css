@@ -1,0 +1,132 @@
+/* Container for all parsed elements */
+.ct-parsed {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+  line-height: 1.6;
+  margin: 0 0 1em 0;
+}
+
+/* Headings */
+.ct-parsed.heading {
+  margin-top: 1.2em;
+  margin-bottom: 0.5em;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.ct-parsed.heading-1 {
+  font-size: 2.25em;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 0.3em;
+}
+
+.ct-parsed.heading-2 {
+  font-size: 1.75em;
+  border-bottom: 1.5px solid #2980b9;
+  padding-bottom: 0.3em;
+}
+
+.ct-parsed.heading-3 {
+  font-size: 1.3em;
+  color: #34495e;
+}
+
+.ct-parsed.heading-4,
+.ct-parsed.heading-5,
+.ct-parsed.heading-6 {
+  font-size: 1.1em;
+  color: #3d566e;
+}
+
+/* Paragraph */
+.ct-parsed.paragraph {
+  margin: 0 0 1em 0;
+}
+
+/* Inline styles */
+.ct-parsed.bold {
+  font-weight: 700;
+}
+
+.ct-parsed.italic {
+  font-style: italic;
+}
+
+.ct-parsed.strikethrough {
+  text-decoration: line-through;
+  color: #a94442; /* dark red */
+}
+
+/* Links */
+.ct-parsed.link {
+  color: #2980b9;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.ct-parsed.link:hover,
+.ct-parsed.link:focus {
+  color: #1c5980;
+  text-decoration: none;
+}
+
+/* Images */
+.ct-parsed.image {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0.75em 0;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Inline code */
+.ct-parsed.code {
+  background-color: #f6f8fa;
+  font-family: 'Courier New', Courier, monospace;
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-size: 0.95em;
+  color: #e83e8c;
+}
+
+/* Blockquote */
+.ct-parsed.blockquote {
+  margin: 1em 1em;
+  padding-left: 1em;
+  border-left: 4px solid #95a5a6;
+  color: #555;
+  font-style: italic;
+  background-color: #f9f9f9;
+  border-radius: 3px;
+}
+
+/* Unordered list */
+.ct-parsed.list {
+  list-style-type: disc;
+  margin-left: 1.5em;
+  margin-bottom: 1em;
+}
+
+.ct-parsed.list-item {
+  margin-bottom: 0.25em;
+}
+
+/* Ordered list */
+.ct-parsed.olist {
+  list-style-type: decimal;
+  margin-left: 1.5em;
+  margin-bottom: 1em;
+}
+
+.ct-parsed.olist-item {
+  margin-bottom: 0.25em;
+}
+
+/* Horizontal rule */
+.ct-parsed.hr {
+  border: none;
+  border-top: 1px solid #ccc;
+  margin: 1.5em 0;
+  width: 100%;
+}

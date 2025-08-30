@@ -1,6 +1,25 @@
 Demo/
 node_modules/
-LISANCE
-README
+Tests/
+LICENSE
+README.md
 *.log
 *.gitignore
+
+# Ignore config, environment files
+.env
+.env.*
+
+# Ignore build and coverage output
+dist/
+build/
+coverage/
+
+# Ignore editor and OS files
+.idea/
+.vscode/
+*.swp
+*.swo
+.project
+.settings/
+.DS_Store

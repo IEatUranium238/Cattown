@@ -20,7 +20,7 @@ function debugLog(...args) {
  * @param {string} markdown - The markdown text to convert.
  * @returns {string | undefined} - Returns sanitized or raw HTML, or undefined if error occurs.
  */
-function returnHTML(markdown) {
+export function returnHTML(markdown) {
   try {
     debugLog("Cattown - start of returnHTML function.");
     debugLog("Cattown - got markdown:", markdown);
