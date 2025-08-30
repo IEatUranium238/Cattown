@@ -1,3 +1,7 @@
+import config from "./../cattownConfig.json";
+
+const applyCustomStyle = config.useCustomTheme;
+
 function convertTokensToHTML(tokens) {
   function inlineTokensToHTML(inlineTokens) {
     return inlineTokens
@@ -6,19 +10,29 @@ function convertTokensToHTML(tokens) {
           case "text":
             return escapeHTML(token.content);
           case "boldItalic":
-            return `<strong><em>${escapeHTML(token.content)}</em></strong>`;
+            return `<strong ${
+              applyCustomStyle === true ? `class="ct-parsed bold"` : ""
+            }><em ${
+              applyCustomStyle === true ? `class="ct-parsed italic"` : ""
+            }>${escapeHTML(token.content)}</em></strong>`;
           case "bold":
-            return `<strong>${escapeHTML(token.content)}</strong>`;
+            return `<strong ${
+              applyCustomStyle === true ? `class="ct-parsed bold"` : ""
+            }>${escapeHTML(token.content)}</strong>`;
           case "italic":
-            return `<em>${escapeHTML(token.content)}</em>`;
+            return `<em ${
+              applyCustomStyle === true ? `class="ct-parsed italic"` : ""
+            }>${escapeHTML(token.content)}</em>`;
           case "link":
-            return `<a href="${escapeAttribute(token.href)}">${escapeHTML(
-              token.content
-            )}</a>`;
+            return `<a href="${escapeAttribute(token.href)}" ${
+              applyCustomStyle === true ? `class="ct-parsed link"` : ""
+            }>${escapeHTML(token.content)}</a>`;
           case "image":
             return `<img src="${escapeAttribute(
               token.src
-            )}" alt="${escapeAttribute(token.alt)}" />`;
+            )}" alt="${escapeAttribute(token.alt)}" ${
+              applyCustomStyle === true ? `class="ct-parsed image"` : ""
+            } />`;
           default:
             return escapeHTML(token.content || "");
         }
@@ -53,9 +67,15 @@ function convertTokensToHTML(tokens) {
     .map((token) => {
       if (token.megaType === "heading") {
         const level = Math.min(Math.max(token.level, 1), 6);
-        return `<h${level}>${inlineTokensToHTML(token.content)}</h${level}>`;
+        return `<h${level} ${
+          applyCustomStyle === true
+            ? `class="ct-parsed heading heading-${level}"`
+            : ""
+        }>${inlineTokensToHTML(token.content)}</h${level}>`;
       } else if (token.megaType === "paragraph") {
-        return `<p>${inlineTokensToHTML(token.content)}</p>`;
+        return `<p ${
+          applyCustomStyle === true ? `class="ct-parsed paragraph"` : ""
+        }>${inlineTokensToHTML(token.content)}</p>`;
       } else {
         return "";
       }

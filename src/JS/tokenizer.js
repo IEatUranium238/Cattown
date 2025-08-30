@@ -1,4 +1,4 @@
-function tokeniseUserInput(input) {
+function tokenizeUserInput(input) {
   const lines = input.split('\n');
   const tokens = [];
 
@@ -96,4 +96,4 @@ function tokeniseUserInput(input) {
   return tokens;
 }
 
-export default tokeniseUserInput;
+export default tokenizeUserInput;

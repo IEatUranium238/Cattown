@@ -11,7 +11,7 @@ function debugLog(...args) {
   console.log(...args);
 }
 
-function ReturnRenderedHTML(markdown) {
+function returnHTML(markdown) {
   try {
     debugLog("Cattown - got markdown:");
     debugLog(markdown);
@@ -40,4 +40,4 @@ function ReturnRenderedHTML(markdown) {
   }
 }
 
-export default ReturnRenderedHTML;
+export default returnHTML;
