@@ -1,0 +1,13 @@
+{
+  "name": "markcat",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build-css": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "ieaturanium238",
+  "license": "MIT",
+  "type": "commonjs"
+}
