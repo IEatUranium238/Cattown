@@ -1,5 +1,5 @@
 {
   "useCustomTheme": true,
-  "debugMode": true,
+  "debugMode": false,
   "enableSanitization": true
 }
