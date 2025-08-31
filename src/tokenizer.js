@@ -21,7 +21,9 @@ function tokenizeUserInput(input) {
    * - BoldItalic: ***text*** or ___text___
    * - Bold: **text** or __text__
    * - Italic: *text* or _text_
-   * - Strikethrough: ~~text~~ or ~text~
+   * - Strikethrough: ~~text~~
+   * - Subscript: ~text~
+   * - Superscript: ^text^
    *
    * @param {string} text - Inline markdown text to parse.
    * @returns {Array} inlineTokens - Array of inline token objects.
@@ -42,9 +44,13 @@ function tokenizeUserInput(input) {
       { type: "boldItalic", markers: ["***", "___"] },
       { type: "bold", markers: ["**", "__"] },
       { type: "italic", markers: ["*", "_"] },
-      { type: "strikethrough", markers: ["~~", "~"] },
+      // Strikethrough: exactly 2 tildes only
+      { type: "strikethrough", markers: ["~~"] },
+      // Subscript: single tilde marker ~text~
+      { type: "subscript", markers: ["~"] },
+      // Superscript: single caret markers ^text^
+      { type: "superscript", markers: ["^"] },
     ];
-
     // Stack for iterative parsing of nested inline formatting
     // Each frame holds remaining text to parse and current tokens to push to
     const stack = [{ remainingText: text, tokens: inlineTokens }];
@@ -79,6 +85,20 @@ function tokenizeUserInput(input) {
               // Look for corresponding closing marker after start marker
               const endIndex = str.indexOf(marker, startIndex + marker.length);
               if (endIndex !== -1) {
+                // Special handling for strikethrough to allow only "~~"
+                if (type === "strikethrough" && marker !== "~~") {
+                  // skip non "~~" strikethrough
+                  continue;
+                }
+                // For subscript and superscript (single char markers), ensure they are not immediately adjacent (non-empty content)
+                const innerLength = endIndex - (startIndex + marker.length);
+                if (
+                  (type === "subscript" || type === "superscript") &&
+                  innerLength === 0
+                ) {
+                  // empty content, skip
+                  continue;
+                }
                 if (!earliestStyled || startIndex < earliestStyled.startIndex) {
                   earliestStyled = { type, marker, startIndex, endIndex };
                 }
@@ -146,7 +166,7 @@ function tokenizeUserInput(input) {
           });
           str = str.slice(earliestMatch.index + earliestMatch.match[0].length);
         } else {
-          // styled inline formatting: bold, italic, strikethrough (with nested content)
+          // styled inline formatting: bold, italic, strikethrough, subscript, superscript (with nested content)
           const { marker, startIndex, endIndex, type } = earliestMatch;
           const innerText = str.slice(startIndex + marker.length, endIndex);
           const styledToken = { type, content: [] };

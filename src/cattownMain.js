@@ -22,6 +22,7 @@ function debugLog(...args) {
  */
 export function returnHTML(markdown) {
   try {
+    let startTime = Date.now();
     debugLog("Cattown - start of returnHTML function.");
     debugLog("Cattown - got markdown: \n", markdown);
 
@@ -37,13 +38,16 @@ export function returnHTML(markdown) {
     if (useSanitization) {
       const cleanHTML = DOMPurify.sanitize(dirtyHTML);
       debugLog("Cattown - sanitized HTML code: \n", cleanHTML);
-      debugLog("Cattown - done!");
+      let endTime = Date.now();
+      let elapsedTime = endTime - startTime;
+      debugLog("Cattown - done! Time took: " + elapsedTime + "ms");
       return cleanHTML;
     } else {
-      debugLog("Cattown - done!");
+      let endTime = Date.now();
+      let elapsedTime = endTime - startTime;
+      debugLog("Cattown - done! Time took: " + elapsedTime + "ms");
       return dirtyHTML;
     }
-
   } catch (error) {
     console.error("Cattown - failed to render markdown! Error: \n", error);
     return ""; // return nothing if error
@@ -52,11 +56,13 @@ export function returnHTML(markdown) {
 
 /**
  * Converts markdown and inserts resulting HTML into a DOM element.
+ * Replaces all content with result.
  * @param {string} markdown - The markdown text to convert.
  * @param {HTMLElement} element - DOM element to insert HTML into.
  */
 export function insertIntoElement(markdown, element) {
   try {
+    let startTime = Date.now();
     debugLog("Cattown - start of insertIntoElement function.");
     debugLog("Cattown - got markdown: \n", markdown);
 
@@ -77,7 +83,9 @@ export function insertIntoElement(markdown, element) {
       element.innerHTML = dirtyHTML;
     }
 
-    debugLog("Cattown - done!");
+    let endTime = Date.now();
+    let elapsedTime = endTime - startTime;
+    debugLog("Cattown - done! Time took: " + elapsedTime + "ms");
   } catch (error) {
     console.error("Cattown - failed to render markdown! Error: \n", error);
   }

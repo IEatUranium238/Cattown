@@ -49,11 +49,23 @@ function convertTokensToHTML(tokens) {
 
           case "strikethrough":
             return (
-              `<del${
-                applyCustomStyle ? ` class="ct-parsed strikethrough"` : ""
-              }>` +
+              `<del${applyCustomStyle ? ` class="ct-parsed strikethrough"` : ""}>` +
               inlineTokensToHTML(token.content) +
               `</del>`
+            );
+
+          case "subscript":
+            return (
+              `<sub${applyCustomStyle ? ` class="ct-parsed subscript"` : ""}>` +
+              inlineTokensToHTML(token.content) +
+              `</sub>`
+            );
+
+          case "superscript":
+            return (
+              `<sup${applyCustomStyle ? ` class="ct-parsed superscript"` : ""}>` +
+              inlineTokensToHTML(token.content) +
+              `</sup>`
             );
 
           case "link":

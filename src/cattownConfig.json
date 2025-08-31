@@ -1,6 +1,6 @@
 {
   "useCustomTheme": true,
-  "debugMode": true,
+  "debugMode": false,
   "enableSanitization": true,
   "LanguageNameInCode": true,
   "IconInCode": true,
