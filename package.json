@@ -5,7 +5,7 @@
   "main": "dist/cattownMain.js",
   "scripts": {
     "dev": "vite",
-    "build": "babel src --out-dir dist --copy-files",
+    "build": "vite build",
     "test": "jest",
     "prepare": "npm run build"
   },

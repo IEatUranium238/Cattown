@@ -1,5 +1,6 @@
 Demo/
 node_modules/
+src/
 Tests/
 LICENSE
 README.md
@@ -7,6 +8,7 @@ README.md
 *.gitignore
 babel.config.js
 jest.config.js
+vite.config.js
 
 # Ignore config, environment files
 .env

@@ -2,6 +2,7 @@ import tokenizer from "./tokenizer.js";
 import convertTokensToHTML from "./tokensToHTML.js";
 import DOMPurify from "dompurify";
 import getSettings from "./cattownConfig.js";
+import './markdownStyles.css';
 let isInDebug = getSettings("debugMode");
 
 /**
