@@ -21,6 +21,7 @@ function tokenizeUserInput(input) {
    * - BoldItalic: ***text*** or ___text___
    * - Bold: **text** or __text__
    * - Italic: *text* or _text_
+   * - Highlight: ==text==
    * - Strikethrough: ~~text~~
    * - Subscript: ~text~
    * - Superscript: ^text^
@@ -44,11 +45,9 @@ function tokenizeUserInput(input) {
       { type: "boldItalic", markers: ["***", "___"] },
       { type: "bold", markers: ["**", "__"] },
       { type: "italic", markers: ["*", "_"] },
-      // Strikethrough: exactly 2 tildes only
       { type: "strikethrough", markers: ["~~"] },
-      // Subscript: single tilde marker ~text~
+      { type: "highlight", markers: ["=="] },
       { type: "subscript", markers: ["~"] },
-      // Superscript: single caret markers ^text^
       { type: "superscript", markers: ["^"] },
     ];
     // Stack for iterative parsing of nested inline formatting

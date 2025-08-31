@@ -104,6 +104,15 @@ function convertTokensToHTML(tokens) {
               `</code>`
             );
 
+          case "highlight":
+            return (
+              `<mark${
+                applyCustomStyle ? ` class="ct-parsed highlight"` : ""
+              }>` +
+              inlineTokensToHTML(token.content) +
+              `</mark>`
+            );
+
           default:
             // If content is nested tokens, recurse; otherwise, escape
             if (Array.isArray(token.content)) {
