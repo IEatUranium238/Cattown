@@ -1,9 +1,8 @@
-import returnHTML, { insertIntoElement } from "../src/cattownMain.js";
+import returnHTML, { appendIntoElement, insertIntoElement, replaceIntoElement } from "../src/cattownMain.js";
 import config from './../src/cattownConfig.json';
-const body = document.querySelector("body");
+const content = document.getElementById("result");
 
 const field = document.getElementById("input")
-const btn = document.getElementById("add")
 
 // Example use just for returning HTML
 // let result = returnHTML(MarkdownString);
@@ -12,6 +11,6 @@ const btn = document.getElementById("add")
 // insertIntoElement(MarkdownString,body)
 
 
-btn.addEventListener("click", () => {
-  insertIntoElement(field.value,body)
+field.addEventListener("input", () => {
+  replaceIntoElement(field.value,content)
 })

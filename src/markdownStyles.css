@@ -1,0 +1,307 @@
+/* ===========================
+   Base Colors (CSS Variables)
+   ============================ */
+:root {
+  --color-text-primary: #222222;
+  --color-text-secondary: #444444;
+  --color-text-heading: #1a1a1a;
+  --color-text-muted: #555555;
+  --color-text-strikethrough: #7a3e3e;
+  --color-bg-quote: #fafafa;
+  --color-bg-code-inline: #f5f5f7;
+  --color-bg-code-block: #1e1e1e;
+  --color-bg-table-header: #f2f2f2;
+  --color-bg-table-row-even: #fafafa;
+  --color-bg-table: #ffffff;
+  --color-bg-highlight: #fbff00;
+  --color-border-light: #ddd;
+  --color-border-medium: #ccc;
+  --color-border-quote: #b5b5b5;
+  --color-border-table: #ccc;
+  --color-link: #2176bd;
+  --color-link-hover: #115293;
+  --color-code-inline-text: #d6336c;
+  --color-code-block-text: #f8f8f2;
+}
+
+/* ===========================
+   Dark Mode Overrides (.ct-darkmode)
+   ============================ */
+.ct-darkmode {
+  --color-text-primary: #e2e2e2;
+  --color-text-secondary: #cccccc;
+  --color-text-heading: #ffffff;
+  --color-text-muted: #aaaaaa;
+  --color-text-strikethrough: #b87272;
+  --color-bg-quote: #2a2a2a;
+  --color-bg-code-inline: #3b3b3b;
+  --color-bg-code-block: #121212;
+  --color-bg-table-header: #333333;
+  --color-bg-table-row-even: #2b2b2b;
+  --color-bg-table: #1a1a1a;
+  --color-bg-highlight: #ffeb3b;
+  --color-border-light: #444444;
+  --color-border-medium: #666666;
+  --color-border-quote: #555555;
+  --color-border-table: #555555;
+  --color-link: #76aaff;
+  --color-link-hover: #aaccff;
+  --color-code-inline-text: #ff79c6;
+  --color-code-block-text: #f8f8f2;
+}
+
+/* ===========================
+   Base Styles: Container, Text
+   ============================ */
+.ct-parsed {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  color: var(--color-text-primary);
+  line-height: 1.5;
+  margin: 0 0 1.25em 0;
+}
+
+/* ===========================
+   Headings Styles
+   ============================ */
+.ct-parsed.heading {
+  margin-top: 1.5em;
+  margin-bottom: 0.6em;
+  font-weight: 600;
+  color: var(--color-text-heading);
+  scroll-margin-top: 1em;
+}
+.ct-parsed.heading-1 {
+  font-size: 2.25rem;
+  border-bottom: 2px solid var(--color-border-medium);
+  padding-bottom: 0.3em;
+}
+.ct-parsed.heading-2 {
+  font-size: 1.75rem;
+  border-bottom: 1.5px solid var(--color-border-light);
+  padding-bottom: 0.3em;
+}
+.ct-parsed.heading-3 {
+  font-size: 1.3rem;
+  color: var(--color-text-secondary);
+}
+.ct-parsed.heading-4,
+.ct-parsed.heading-5,
+.ct-parsed.heading-6 {
+  font-size: 1.1rem;
+  color: var(--color-text-secondary);
+}
+
+/* ===========================
+   Paragraph and Text Formatting
+   ============================ */
+.ct-parsed.paragraph {
+  margin: 0 0 1.25em 0;
+}
+.ct-parsed.bold {
+  font-weight: 600;
+}
+.ct-parsed.italic {
+  font-style: italic;
+}
+.ct-parsed.strikethrough {
+  text-decoration: line-through;
+  color: var(--color-text-strikethrough);
+}
+
+/* ===========================
+   Link Styles
+   ============================ */
+.ct-parsed.link {
+  color: var(--color-link);
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.ct-parsed.link:hover,
+.ct-parsed.link:focus {
+  color: var(--color-link-hover);
+  text-decoration: none;
+  outline: none;
+}
+
+/* ===========================
+   Image Styles
+   ============================ */
+.ct-parsed.image {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1em 0;
+  border-radius: 6px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* ===========================
+   Inline Code Styles
+   ============================ */
+.ct-parsed.code {
+  background-color: var(--color-bg-code-inline);
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  font-size: 0.95em;
+  color: var(--color-code-inline-text);
+}
+
+/* ===========================
+   Blockquote Styles
+   ============================ */
+.ct-parsed.blockquote {
+  margin: 1em 1em;
+  padding-left: 1.2em;
+  border-left: 4px solid var(--color-border-quote);
+  color: var(--color-text-muted);
+  font-style: italic;
+  background-color: var(--color-bg-quote);
+  border-radius: 4px;
+}
+
+/* ===========================
+   List Styles
+   ============================ */
+.ct-parsed.list,
+.ct-parsed.olist {
+  margin-left: 1.75em;
+  margin-bottom: 1.25em;
+}
+.ct-parsed.list {
+  list-style-type: disc;
+}
+.ct-parsed.olist {
+  list-style-type: decimal;
+}
+.ct-parsed.list-item,
+.ct-parsed.olist-item {
+  margin-bottom: 0.3em;
+}
+
+/* ===========================
+   Horizontal Rule Styles
+   ============================ */
+.ct-parsed.hr {
+  border: none;
+  border-top: 1px solid var(--color-border-light);
+  margin: 2em 0;
+  width: 100%;
+}
+
+/* ===========================
+   Code Blocks Styles
+   ============================ */
+.ct-parsed.codeblock-lang-label {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.25em;
+  color: var(--color-text-primary);
+  font-size: 0.9em;
+}
+.ct-parsed.codeblock-pre {
+  background-color: var(--color-bg-code-block);
+  padding: 1em;
+  overflow-x: auto;
+  border-radius: 6px;
+}
+.ct-parsed.codeblock-code {
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+  color: var(--color-code-block-text);
+  font-size: 0.95em;
+}
+.ct-parsed.codeblock-image {
+  height: 1.5em;
+  width: auto;
+  margin: 0 0.3em 0 0;
+}
+
+/* ===========================
+   Table Styles
+   ============================ */
+.ct-parsed.table-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* smooth scroll on iOS */
+  margin: 1em 0;
+}
+.ct-parsed.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 1rem;
+  min-width: 600px;
+  margin: 0 0 5px 0;
+  overflow: hidden;
+}
+
+/* Table headers */
+.ct-parsed.table thead tr {
+  background-color: var(--color-bg-table-header);
+  text-align: left;
+  font-weight: 600;
+}
+.ct-parsed.table-header-cell {
+  padding: 0.75em 1em;
+  color: var(--color-text-secondary);
+  border-bottom: 2px solid var(--color-border-table);
+  border-right: 1px solid var(--color-border-table);
+  white-space: nowrap;
+  user-select: none;
+}
+.ct-parsed.table-header-cell:last-child {
+  border-right: none;
+}
+
+/* Table body */
+.ct-parsed.table tbody tr {
+  border-bottom: 1px solid var(--color-border-table);
+}
+.ct-parsed.table-row:nth-child(even) {
+  background-color: var(--color-bg-table-row-even);
+}
+
+/* Table cells */
+.ct-parsed.table-cell {
+  padding: 0.65em 1em;
+  border-right: 1px solid var(--color-border-table);
+  vertical-align: top;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+.ct-parsed.table-cell:last-child {
+  border-right: none;
+}
+
+/* ===========================
+   Highlighting Styles
+   ============================ */
+.ct-parsed.highlight {
+  background-color: var(--color-bg-highlight);
+  border-radius: 5px;
+}
+
+/* ===========================
+   Tasklist Styles
+   ============================ */
+ul.ct-parsed.tasklist {
+  list-style: none;
+  padding-left: 1.2em;
+  margin: 0 0 1em 0;
+}
+ul.ct-parsed.tasklist li.ct-parsed.tasklist-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.3em;
+  font-size: 1em;
+  line-height: 1.3;
+}
+ul.ct-parsed.tasklist li.ct-parsed.tasklist-item input[type="checkbox"] {
+  margin: 0 0.5em 0 0;
+  vertical-align: middle;
+  width: 1em;
+  height: 1em;
+  cursor: default;
+}

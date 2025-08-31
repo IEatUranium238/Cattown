@@ -302,10 +302,10 @@ function convertTokensToHTML(tokens) {
                 `</tr>`
             )
             .join("\n");
-          return `<table${applyCustomStyle ? ` class="ct-parsed table"` : ""}>
+          return `<div${applyCustomStyle ? ` class="ct-parsed table-container"` : ""}><table${applyCustomStyle ? ` class="ct-parsed table"` : ""}>
     <thead><tr>${headerHTML}</tr></thead>
     <tbody>${rowsHTML}</tbody>
-  </table>`;
+  </table></div>`;
         }
 
         default:
