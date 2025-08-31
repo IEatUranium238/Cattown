@@ -1,8 +1,19 @@
 import tokenizer from "./tokenizer.js";
 import convertTokensToHTML from "./tokensToHTML.js";
-import DOMPurify from "dompurify";
 import getSettings from "./cattownConfig.js";
-import './markdownStyles.css';
+// CSS import removed for npm package - users should import it separately
+
+// DOMPurify will be imported dynamically or provided by the user
+let DOMPurify = null;
+
+/**
+ * Set DOMPurify instance for sanitization
+ * @param {Object} instance - DOMPurify instance
+ */
+export function setDOMPurify(instance) {
+  DOMPurify = instance;
+}
+
 let isInDebug = getSettings("debugMode");
 
 /**
@@ -42,8 +53,8 @@ export function returnHTML(markdown) {
     const dirtyHTML = convertTokensToHTML(tokens);
     debugLog("Cattown - generated HTML code: \n", dirtyHTML);
 
-    // Sanitize HTML if enabled in config
-    if (useSanitization) {
+    // Sanitize HTML if enabled in config and DOMPurify is available
+    if (useSanitization && DOMPurify) {
       const cleanHTML = DOMPurify.sanitize(dirtyHTML);
       debugLog("Cattown - sanitized HTML code: \n", cleanHTML);
       let endTime = Date.now();
@@ -51,6 +62,9 @@ export function returnHTML(markdown) {
       debugLog("Cattown - done! Time took: " + elapsedTime + "ms");
       return cleanHTML;
     } else {
+      if (useSanitization && !DOMPurify) {
+        debugLog("Cattown - sanitization requested but DOMPurify not available, returning unsanitized HTML");
+      }
       let endTime = Date.now();
       let elapsedTime = endTime - startTime;
       debugLog("Cattown - done! Time took: " + elapsedTime + "ms");
@@ -85,11 +99,14 @@ export function insertIntoElement(markdown, element) {
     debugLog("Cattown - generated HTML code: \n", dirtyHTML);
 
     // Sanitize HTML if enabled and insert into the element
-    if (useSanitization) {
+    if (useSanitization && DOMPurify) {
       const cleanHTML = DOMPurify.sanitize(dirtyHTML);
       debugLog("Cattown - sanitized HTML code: \n", cleanHTML);
       element.innerHTML = cleanHTML;
     } else {
+      if (useSanitization && !DOMPurify) {
+        debugLog("Cattown - sanitization requested but DOMPurify not available, using unsanitized HTML");
+      }
       element.innerHTML = dirtyHTML;
     }
 
@@ -123,11 +140,14 @@ export function appendIntoElement(markdown, element) {
     debugLog("Cattown - generated HTML code: \n", dirtyHTML);
 
     // Sanitize HTML if enabled and insert into the element
-    if (useSanitization) {
+    if (useSanitization && DOMPurify) {
       const cleanHTML = DOMPurify.sanitize(dirtyHTML);
       debugLog("Cattown - sanitized HTML code: \n", cleanHTML);
       element.innerHTML += cleanHTML;
     } else {
+      if (useSanitization && !DOMPurify) {
+        debugLog("Cattown - sanitization requested but DOMPurify not available, using unsanitized HTML");
+      }
       element.innerHTML += dirtyHTML;
     }
 
@@ -156,7 +176,7 @@ export function replaceIntoElement(markdown, element) {
     let dirtyHTML = convertTokensToHTML(tokens);
 
     // Sanitize if needed
-    if (useSanitization && typeof DOMPurify !== "undefined") {
+    if (useSanitization && DOMPurify) {
       dirtyHTML = DOMPurify.sanitize(dirtyHTML);
     }
 

@@ -2,13 +2,27 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   build: {
-    minify: 'esbuild', // fast minifier for JS and CSS
+    lib: {
+      entry: 'src/index.js',
+      name: 'cattown',
+      fileName: 'index',
+      formats: ['es']
+    },
     rollupOptions: {
-      input: 'src/cattownMain.js', // your main JS entry
+      external: ['dompurify'],
       output: {
-        entryFileNames: 'cattownMain.js',
-        assetFileNames: '[name].[ext]'
+        globals: {
+          dompurify: 'DOMPurify'
+        }
       }
-    }
+    },
+    minify: 'esbuild',
+    sourcemap: true,
+    cssCodeSplit: false,
+    assetsInlineLimit: 0
+  },
+  css: {
+    modules: false,
+    postcss: null
   }
 });
