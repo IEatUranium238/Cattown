@@ -179,10 +179,29 @@ function convertTokensToHTML(tokens) {
           }>${inlineTokensToHTML(token.content)}</p>`;
 
         case "blockquote":
-          // Recursively convert nested blockquote content tokens to HTML
           return `<blockquote${
             applyCustomStyle ? ` class="ct-parsed blockquote"` : ""
           }>${convertTokensToHTML(token.content)}</blockquote>`;
+
+        case "tasklist":
+          // Task list: render checkbox input + inline content inside <li>
+          return (
+            `<ul${applyCustomStyle ? ` class="ct-parsed tasklist"` : ""}>\n` +
+            token.items
+              .map(
+                (item) =>
+                  `<li${
+                    applyCustomStyle ? ` class="ct-parsed tasklist-item"` : ""
+                  }>` +
+                  `<input type="checkbox" disabled${
+                    item.checked ? " checked" : ""
+                  } /> ` +
+                  inlineTokensToHTML(item.content) +
+                  `</li>`
+              )
+              .join("\n") +
+            `\n</ul>`
+          );
 
         case "list":
           // Unordered list: Render each item inline tokens inside <li>

@@ -354,6 +354,28 @@ function tokenizeUserInput(input) {
       continue;
     }
 
+    // Task list, before lists
+    const taskListItemMatch = trimmed.match(/^([-*])\s+\[( |x|X)\]\s+(.*)$/);
+    if (taskListItemMatch) {
+      const items = [];
+      let j = i;
+
+      while (j < lines.length) {
+        const l = lines[j].trim();
+        const m = l.match(/^([-*])\s+\[( |x|X)\]\s+(.*)$/);
+        if (!m) break;
+        const checked = m[2].toLowerCase() === "x";
+        // tokenize inline content of the task description
+        const contentTokens = tokenizeInline(m[3]);
+        items.push({ checked, content: contentTokens });
+        j++;
+      }
+
+      tokens.push({ megaType: "tasklist", items });
+      i = j - 1;
+      continue;
+    }
+
     // Ordered list items: lines starting with number + '.'
     if (/^\d+\.\s+/.test(trimmed)) {
       const items = [];
