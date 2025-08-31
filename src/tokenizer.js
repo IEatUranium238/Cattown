@@ -19,124 +19,137 @@ function tokenizeUserInput(input) {
     const inlineTokens = [];
     if (!text) return inlineTokens;
 
-    // Regex patterns for different inline markdown elements
-    const patterns = [
-      { type: "boldItalic", regex: /(\*\*\*|___)/g },
-      { type: "bold", regex: /(\*\*|__)/g },
-      { type: "italic", regex: /(\*|_)/g },
-      { type: "strikethrough", regex: /(~{1,2})/g },
-      { type: "link", regex: /\[([^\]]+)\]\(([^)]+)\)/g },
+    // Patterns for atomic tokens (link, image, code) prioritized first
+    const atomicPatterns = [
       { type: "image", regex: /!\[([^\]]*)\]\(([^)]+)\)/g },
+      { type: "link", regex: /\[([^\]]+)\]\(([^)]+)\)/g },
       { type: "code", regex: /`([^`]+)`/g },
     ];
 
-    // Find earliest match for link, image, and code patterns (last three items)
-    let earliestMatch = null;
-    let earliestIndex = text.length;
-    const simplePatterns = patterns.slice(-3);
+    // Markers for styled tokens boldItalic, bold, italic, strikethrough
+    // Order matters: boldItalic first, then bold, then italic, then strikethrough
+    const styledMarkers = [
+      { type: "boldItalic", markers: ["***", "___"] },
+      { type: "bold", markers: ["**", "__"] },
+      { type: "italic", markers: ["*", "_"] },
+      { type: "strikethrough", markers: ["~~", "~"] },
+    ];
 
-    for (const { type, regex } of simplePatterns) {
-      regex.lastIndex = 0;
-      const match = regex.exec(text);
-      if (match && match.index < earliestIndex) {
-        earliestIndex = match.index;
-        earliestMatch = { type, match, regex, index: match.index };
-      }
-    }
-
-    // If no simple pattern match found, try complex markers (boldItalic, bold, italic, strikethrough)
-    if (!earliestMatch) {
-      // Order matters here for correct precedence in parsing
-      const markers = [
-        { type: "boldItalic", marker: "***" },
-        { type: "boldItalic", marker: "___" },
-        { type: "bold", marker: "**" },
-        { type: "bold", marker: "__" },
-        { type: "italic", marker: "*" },
-        { type: "italic", marker: "_" },
-        { type: "strikethrough", marker: "~~" },
-        { type: "strikethrough", marker: "~" },
-      ];
-
-      earliestIndex = text.length;
-      for (const { type, marker } of markers) {
-        const startIndex = text.indexOf(marker);
-        if (startIndex !== -1 && startIndex < earliestIndex) {
-          const endIndex = text.indexOf(marker, startIndex + marker.length);
-          if (endIndex !== -1) {
-            earliestIndex = startIndex;
-            earliestMatch = { type, marker, startIndex, endIndex };
+    // Helper function to find earliest match among patterns with regex global flag
+    function findEarliestMatch(patterns, str) {
+      let earliest = null;
+      for (const { type, regex } of patterns) {
+        regex.lastIndex = 0;
+        const match = regex.exec(str);
+        if (match) {
+          if (earliest === null || match.index < earliest.index) {
+            earliest = { type, match, index: match.index };
           }
         }
       }
+      return earliest;
     }
 
-    // If no markdown formatting found, treat entire text as plain text
-    if (!earliestMatch) {
-      inlineTokens.push({ type: "text", content: text });
-      return inlineTokens;
+    // Helper to find earliest styled marker pair
+    function findEarliestStyledMarker(str) {
+      let earliest = null;
+      for (const { type, markers } of styledMarkers) {
+        for (const marker of markers) {
+          const startIndex = str.indexOf(marker);
+          if (startIndex !== -1) {
+            const endIndex = str.indexOf(marker, startIndex + marker.length);
+            if (endIndex !== -1) {
+              if (earliest === null || startIndex < earliest.startIndex) {
+                earliest = { type, marker, startIndex, endIndex };
+              }
+            }
+          }
+        }
+      }
+      return earliest;
     }
 
-    // Add preceding text before the matched markdown syntax as plain text
-    if (earliestIndex > 0) {
-      inlineTokens.push({
-        type: "text",
-        content: text.slice(0, earliestIndex),
-      });
-    }
+    // Main parsing loop for current text
+    while (text.length > 0) {
+      // 1. Look for earliest atomic token (image, link, code)
+      const atomicMatch = findEarliestMatch(atomicPatterns, text);
 
-    // Process matched token accordingly
-    switch (earliestMatch.type) {
-      case "link":
-        inlineTokens.push({
-          type: "link",
-          content: earliestMatch.match[1], // link text
-          href: earliestMatch.match[2],    // link url
-        });
-        inlineTokens.push(
-          ...tokenizeInline(text.slice(earliestMatch.index + earliestMatch.match[0].length))
-        );
+      // 2. Look for earliest styled marker
+      const styledMatch = findEarliestStyledMarker(text);
+
+      // Determine which comes first
+      let earliestMatch = null;
+      if (atomicMatch && styledMatch) {
+        earliestMatch =
+          atomicMatch.index <= styledMatch.startIndex
+            ? atomicMatch
+            : styledMatch;
+      } else {
+        earliestMatch = atomicMatch || styledMatch;
+      }
+
+      if (!earliestMatch) {
+        // No more markdown tokens found; push rest as plain text
+        inlineTokens.push({ type: "text", content: text });
         break;
-      case "image":
+      }
+
+      // Add text before match as plain text if any
+      const preText =
+        earliestMatch.type === "link" ||
+        earliestMatch.type === "image" ||
+        earliestMatch.type === "code"
+          ? text.slice(0, earliestMatch.index)
+          : text.slice(0, earliestMatch.startIndex);
+      if (preText) {
+        inlineTokens.push({ type: "text", content: preText });
+      }
+
+      if (earliestMatch.type === "image") {
+        // Image token
         inlineTokens.push({
           type: "image",
-          alt: earliestMatch.match[1], // alt text
-          src: earliestMatch.match[2], // image source
+          alt: earliestMatch.match[1],
+          src: earliestMatch.match[2],
         });
-        inlineTokens.push(
-          ...tokenizeInline(text.slice(earliestMatch.index + earliestMatch.match[0].length))
-        );
-        break;
-      case "code":
+        text = text.slice(earliestMatch.index + earliestMatch.match[0].length);
+      } else if (earliestMatch.type === "link") {
+        // Link token
+        // Tokenize the link text itself in case it has styles (recursive)
+        const linkTextTokens = tokenizeInline(earliestMatch.match[1]);
+        inlineTokens.push({
+          type: "link",
+          content: linkTextTokens,
+          href: earliestMatch.match[2],
+        });
+        text = text.slice(earliestMatch.index + earliestMatch.match[0].length);
+      } else if (earliestMatch.type === "code") {
+        // Code token, just take content as is
         inlineTokens.push({
           type: "code",
           content: earliestMatch.match[1],
         });
-        inlineTokens.push(
-          ...tokenizeInline(text.slice(earliestMatch.index + earliestMatch.match[0].length))
-        );
-        break;
-      // For text styles (boldItalic, bold, italic, strikethrough), recursively tokenize inside
-      case "boldItalic":
-      case "bold":
-      case "italic":
-      case "strikethrough": {
-        const innerText = text.slice(
-          earliestMatch.startIndex + earliestMatch.marker.length,
-          earliestMatch.endIndex
-        );
+        text = text.slice(earliestMatch.index + earliestMatch.match[0].length);
+      } else if (
+        earliestMatch.type === "boldItalic" ||
+        earliestMatch.type === "bold" ||
+        earliestMatch.type === "italic" ||
+        earliestMatch.type === "strikethrough"
+      ) {
+        const { marker, startIndex, endIndex, type } = earliestMatch;
+        const innerText = text.slice(startIndex + marker.length, endIndex);
+        // Recursively tokenize inside the styled segment
+        const innerTokens = tokenizeInline(innerText);
         inlineTokens.push({
-          type: earliestMatch.type,
-          content: tokenizeInline(innerText),
+          type,
+          content: innerTokens,
         });
-        inlineTokens.push(
-          ...tokenizeInline(text.slice(earliestMatch.endIndex + earliestMatch.marker.length))
-        );
+        text = text.slice(endIndex + marker.length);
+      } else {
+        // Fallback (should not happen)
+        inlineTokens.push({ type: "text", content: text });
         break;
       }
-      default:
-        // fallback: treat as plain text
-        inlineTokens.push({ type: "text", content: text });
     }
 
     return inlineTokens;
@@ -168,7 +181,9 @@ function tokenizeUserInput(input) {
     }
 
     // Remove blockquote markers '>' and optional space from each line
-    const processedLines = blockquoteLines.map(line => line.replace(/^>\s?/, ""));
+    const processedLines = blockquoteLines.map((line) =>
+      line.replace(/^>\s?/, "")
+    );
 
     // Join and tokenize blockquote content recursively
     const blockquoteContent = processedLines.join("\n");

@@ -23,20 +23,20 @@ function debugLog(...args) {
 export function returnHTML(markdown) {
   try {
     debugLog("Cattown - start of returnHTML function.");
-    debugLog("Cattown - got markdown:", markdown);
+    debugLog("Cattown - got markdown: \n", markdown);
 
     // Tokenize markdown input
     const tokens = tokenizer(markdown);
-    debugLog("Cattown - tokenizer token output:", tokens);
+    debugLog("Cattown - tokenizer token output: \n", tokens);
 
     // Convert tokens to HTML string
     const dirtyHTML = convertTokensToHTML(tokens);
-    debugLog("Cattown - generated HTML code:", dirtyHTML);
+    debugLog("Cattown - generated HTML code: \n", dirtyHTML);
 
     // Sanitize HTML if enabled in config
     if (useSanitization) {
       const cleanHTML = DOMPurify.sanitize(dirtyHTML);
-      debugLog("Cattown - sanitized HTML code:", cleanHTML);
+      debugLog("Cattown - sanitized HTML code: \n", cleanHTML);
       debugLog("Cattown - done!");
       return cleanHTML;
     } else {
@@ -45,7 +45,7 @@ export function returnHTML(markdown) {
     }
 
   } catch (error) {
-    console.error("Cattown - failed to render markdown! Error:", error);
+    console.error("Cattown - failed to render markdown! Error: \n", error);
     return ""; // return nothing if error
   }
 }
@@ -58,20 +58,20 @@ export function returnHTML(markdown) {
 export function insertIntoElement(markdown, element) {
   try {
     debugLog("Cattown - start of insertIntoElement function.");
-    debugLog("Cattown - got markdown:", markdown);
+    debugLog("Cattown - got markdown: \n", markdown);
 
     // Tokenize markdown input
     const tokens = tokenizer(markdown);
-    debugLog("Cattown - tokenizer token output:", tokens);
+    debugLog("Cattown - tokenizer token output: \n", tokens);
 
     // Convert tokens to HTML string
     const dirtyHTML = convertTokensToHTML(tokens);
-    debugLog("Cattown - generated HTML code:", dirtyHTML);
+    debugLog("Cattown - generated HTML code: \n", dirtyHTML);
 
     // Sanitize HTML if enabled and insert into the element
     if (useSanitization) {
       const cleanHTML = DOMPurify.sanitize(dirtyHTML);
-      debugLog("Cattown - sanitized HTML code:", cleanHTML);
+      debugLog("Cattown - sanitized HTML code: \n", cleanHTML);
       element.innerHTML = cleanHTML;
     } else {
       element.innerHTML = dirtyHTML;
@@ -79,7 +79,7 @@ export function insertIntoElement(markdown, element) {
 
     debugLog("Cattown - done!");
   } catch (error) {
-    console.error("Cattown - failed to render markdown! Error:", error);
+    console.error("Cattown - failed to render markdown! Error: \n", error);
   }
 }
 

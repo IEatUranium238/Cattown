@@ -49,26 +49,33 @@ function convertTokensToHTML(tokens) {
 
           case "strikethrough":
             return (
-              `<del${applyCustomStyle ? ` class="ct-parsed strikethrough"` : ""}>` +
+              `<del${
+                applyCustomStyle ? ` class="ct-parsed strikethrough"` : ""
+              }>` +
               inlineTokensToHTML(token.content) +
               `</del>`
             );
 
           case "link":
+            let href = token.href;
+            // Checks if link has https:// in front, if no adds it.
+            if (!href.match(/^https?:\/\//)) {
+              href = "https://" + href;
+            }
             return (
-              `<a href="${escapeAttribute(token.href)}"${
+              `<a href="${escapeAttribute(href)}"${
                 applyCustomStyle ? ` class="ct-parsed link"` : ""
               }>` +
-              escapeHTML(token.content) +
+              inlineTokensToHTML(token.content) +
               `</a>`
             );
 
           case "image":
-            return (
-              `<img src="${escapeAttribute(token.src)}" alt="${escapeAttribute(
-                token.alt
-              )}"${applyCustomStyle ? ` class="ct-parsed image"` : ""} />`
-            );
+            return `<img src="${escapeAttribute(
+              token.src
+            )}" alt="${escapeAttribute(token.alt)}"${
+              applyCustomStyle ? ` class="ct-parsed image"` : ""
+            } />`;
 
           case "code":
             return (
@@ -131,7 +138,9 @@ function convertTokensToHTML(tokens) {
           // Clamp heading level between 1 and 6 for valid HTML tags
           const level = Math.min(Math.max(token.level, 1), 6);
           return `<h${level}${
-            applyCustomStyle ? ` class="ct-parsed heading heading-${level}"` : ""
+            applyCustomStyle
+              ? ` class="ct-parsed heading heading-${level}"`
+              : ""
           }>${inlineTokensToHTML(token.content)}</h${level}>`;
         }
 
@@ -160,14 +169,14 @@ function convertTokensToHTML(tokens) {
             .join("\n")}\n</ul>`;
 
         case "olist":
-          // Ordered list: Similar to unordered but with <ol>
+          // Ordered list: similar to unordered list but using <ol> as main tag
           return `<ol${
             applyCustomStyle ? ` class="ct-parsed olist"` : ""
           }>\n${token.items
             .map(
               (item) =>
                 `<li${
-                  applyCustomStyle ? `class=" ct-parsed olist-item"` : ""
+                  applyCustomStyle ? ` class="ct-parsed olist-item"` : ""
                 }>${inlineTokensToHTML(item)}</li>`
             )
             .join("\n")}\n</ol>`;

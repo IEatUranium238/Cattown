@@ -5,6 +5,8 @@ LICENSE
 README.md
 *.log
 *.gitignore
+babel.config.js
+jest.config.js
 
 # Ignore config, environment files
 .env
