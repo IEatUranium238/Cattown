@@ -27,37 +27,37 @@ function convertTokensToHTML(tokens) {
           case "boldItalic":
             // Bold and italic nested elements
             return (
-              `<strong ${applyCustomStyle ? `class="ct-parsed bold"` : ""}>` +
-              `<em ${applyCustomStyle ? `class="ct-parsed italic"` : ""}>` +
+              `<strong${applyCustomStyle ? ` class="ct-parsed bold"` : ""}>` +
+              `<em${applyCustomStyle ? ` class="ct-parsed italic"` : ""}>` +
               inlineTokensToHTML(token.content) +
               `</em></strong>`
             );
 
           case "bold":
             return (
-              `<strong ${applyCustomStyle ? `class="ct-parsed bold"` : ""}>` +
+              `<strong${applyCustomStyle ? ` class="ct-parsed bold"` : ""}>` +
               inlineTokensToHTML(token.content) +
               `</strong>`
             );
 
           case "italic":
             return (
-              `<em ${applyCustomStyle ? `class="ct-parsed italic"` : ""}>` +
+              `<em${applyCustomStyle ? ` class="ct-parsed italic"` : ""}>` +
               inlineTokensToHTML(token.content) +
               `</em>`
             );
 
           case "strikethrough":
             return (
-              `<del ${applyCustomStyle ? `class="ct-parsed strikethrough"` : ""}>` +
+              `<del${applyCustomStyle ? ` class="ct-parsed strikethrough"` : ""}>` +
               inlineTokensToHTML(token.content) +
               `</del>`
             );
 
           case "link":
             return (
-              `<a href="${escapeAttribute(token.href)}" ${
-                applyCustomStyle ? `class="ct-parsed link"` : ""
+              `<a href="${escapeAttribute(token.href)}"${
+                applyCustomStyle ? ` class="ct-parsed link"` : ""
               }>` +
               escapeHTML(token.content) +
               `</a>`
@@ -67,12 +67,12 @@ function convertTokensToHTML(tokens) {
             return (
               `<img src="${escapeAttribute(token.src)}" alt="${escapeAttribute(
                 token.alt
-              )}" ${applyCustomStyle ? `class="ct-parsed image"` : ""} />`
+              )}"${applyCustomStyle ? ` class="ct-parsed image"` : ""} />`
             );
 
           case "code":
             return (
-              `<code ${applyCustomStyle ? `class="ct-parsed code"` : ""}>` +
+              `<code${applyCustomStyle ? ` class="ct-parsed code"` : ""}>` +
               escapeHTML(token.content) +
               `</code>`
             );
@@ -130,51 +130,51 @@ function convertTokensToHTML(tokens) {
         case "heading": {
           // Clamp heading level between 1 and 6 for valid HTML tags
           const level = Math.min(Math.max(token.level, 1), 6);
-          return `<h${level} ${
-            applyCustomStyle ? `class="ct-parsed heading heading-${level}"` : ""
+          return `<h${level}${
+            applyCustomStyle ? ` class="ct-parsed heading heading-${level}"` : ""
           }>${inlineTokensToHTML(token.content)}</h${level}>`;
         }
 
         case "paragraph":
-          return `<p ${
-            applyCustomStyle ? `class="ct-parsed paragraph"` : ""
+          return `<p${
+            applyCustomStyle ? ` class="ct-parsed paragraph"` : ""
           }>${inlineTokensToHTML(token.content)}</p>`;
 
         case "blockquote":
           // Recursively convert nested blockquote content tokens to HTML
-          return `<blockquote ${
-            applyCustomStyle ? `class="ct-parsed blockquote"` : ""
+          return `<blockquote${
+            applyCustomStyle ? ` class="ct-parsed blockquote"` : ""
           }>${convertTokensToHTML(token.content)}</blockquote>`;
 
         case "list":
           // Unordered list: Render each item inline tokens inside <li>
-          return `<ul ${
-            applyCustomStyle ? `class="ct-parsed list"` : ""
+          return `<ul${
+            applyCustomStyle ? ` class="ct-parsed list"` : ""
           }>\n${token.items
             .map(
               (item) =>
-                `<li ${
-                  applyCustomStyle ? `class="ct-parsed list-item"` : ""
+                `<li${
+                  applyCustomStyle ? ` class="ct-parsed list-item"` : ""
                 }>${inlineTokensToHTML(item)}</li>`
             )
             .join("\n")}\n</ul>`;
 
         case "olist":
           // Ordered list: Similar to unordered but with <ol>
-          return `<ol ${
-            applyCustomStyle ? `class="ct-parsed olist"` : ""
+          return `<ol${
+            applyCustomStyle ? ` class="ct-parsed olist"` : ""
           }>\n${token.items
             .map(
               (item) =>
-                `<li ${
-                  applyCustomStyle ? `class="ct-parsed olist-item"` : ""
+                `<li${
+                  applyCustomStyle ? `class=" ct-parsed olist-item"` : ""
                 }>${inlineTokensToHTML(item)}</li>`
             )
             .join("\n")}\n</ol>`;
 
         case "hr":
           // Horizontal rule
-          return `<hr ${applyCustomStyle ? `class="ct-parsed hr"` : ""} />`;
+          return `<hr${applyCustomStyle ? ` class="ct-parsed hr"` : ""} />`;
 
         default:
           // For unknown/unsupported tokens, render empty string
