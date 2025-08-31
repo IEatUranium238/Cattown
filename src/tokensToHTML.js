@@ -1,11 +1,4 @@
-import config from "./cattownConfig.json";
-
-// Flag to determine if custom styling classes should be applied
-const applyCustomStyle = config.useCustomTheme;
-
-// Code snippet flags
-const useCodeLangName = config.LanguageNameInCode;
-const useCodeIcon = config.IconInCode;
+import getSettings from "./cattownConfig";
 
 /**
  * Converts tokens generated from the markdown tokenizer into HTML strings.
@@ -14,6 +7,13 @@ const useCodeIcon = config.IconInCode;
  * @returns {string} - Resulting HTML string.
  */
 function convertTokensToHTML(tokens) {
+  // Flag to determine if custom styling classes should be applied
+  const applyCustomStyle = getSettings("useCustomTheme");
+
+  // Code snippet flags
+  const useCodeLangName = getSettings("LanguageNameInCode");
+  const useCodeIcon = getSettings("IconInCode");
+
   /**
    * Converts an array of inline tokens to HTML.
    * Recursively escapes content and applies styles/classes if enabled.
@@ -302,7 +302,9 @@ function convertTokensToHTML(tokens) {
                 `</tr>`
             )
             .join("\n");
-          return `<div${applyCustomStyle ? ` class="ct-parsed table-container"` : ""}><table${applyCustomStyle ? ` class="ct-parsed table"` : ""}>
+          return `<div${
+            applyCustomStyle ? ` class="ct-parsed table-container"` : ""
+          }><table${applyCustomStyle ? ` class="ct-parsed table"` : ""}>
     <thead><tr>${headerHTML}</tr></thead>
     <tbody>${rowsHTML}</tbody>
   </table></div>`;

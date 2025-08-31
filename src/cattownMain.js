@@ -1,10 +1,15 @@
 import tokenizer from "./tokenizer.js";
 import convertTokensToHTML from "./tokensToHTML.js";
 import DOMPurify from "dompurify";
-import config from "./cattownConfig.json";
+import getSettings from "./cattownConfig.js";
+let isInDebug = getSettings("debugMode");
 
-const isInDebug = config.debugMode;
-const useSanitization = config.enableSanitization;
+/**
+ * Updates debug value.
+ */
+function checkDebug(){
+  isInDebug = getSettings("debugMode");
+}
 
 /**
  * Logs debug messages if debug mode is enabled.
@@ -22,6 +27,8 @@ function debugLog(...args) {
  */
 export function returnHTML(markdown) {
   try {
+    checkDebug()
+    const useSanitization = getSettings("enableSanitization");
     let startTime = Date.now();
     debugLog("Cattown - start of returnHTML function.");
     debugLog("Cattown - got markdown: \n", markdown);
@@ -62,6 +69,8 @@ export function returnHTML(markdown) {
  */
 export function insertIntoElement(markdown, element) {
   try {
+    checkDebug()
+    const useSanitization = getSettings("enableSanitization");
     let startTime = Date.now();
     debugLog("Cattown - start of insertIntoElement function.");
     debugLog("Cattown - got markdown: \n", markdown);
@@ -98,6 +107,8 @@ export function insertIntoElement(markdown, element) {
  */
 export function appendIntoElement(markdown, element) {
   try {
+    checkDebug()
+    const useSanitization = getSettings("enableSanitization");
     let startTime = Date.now();
     debugLog("Cattown - start of appendIntoElement function.");
     debugLog("Cattown - got markdown: \n", markdown);
@@ -135,6 +146,8 @@ export function appendIntoElement(markdown, element) {
  */
 export function replaceIntoElement(markdown, element) {
   try {
+    checkDebug()
+    const useSanitization = getSettings("enableSanitization");
     const startTime = Date.now();
 
     // Tokenize and render markdown
@@ -142,12 +155,12 @@ export function replaceIntoElement(markdown, element) {
     let dirtyHTML = convertTokensToHTML(tokens);
 
     // Sanitize if needed
-    if (useSanitization && typeof DOMPurify !== 'undefined') {
+    if (useSanitization && typeof DOMPurify !== "undefined") {
       dirtyHTML = DOMPurify.sanitize(dirtyHTML);
     }
 
     // Create temporary container only once per call
-    const tempDiv = document.createElement('div');
+    const tempDiv = document.createElement("div");
     tempDiv.innerHTML = dirtyHTML;
 
     // Node comparison
@@ -160,7 +173,8 @@ export function replaceIntoElement(markdown, element) {
 
       if (n1.nodeName !== n2.nodeName) return false;
 
-      const a1 = n1.attributes, a2 = n2.attributes;
+      const a1 = n1.attributes,
+        a2 = n2.attributes;
       if (a1.length !== a2.length) return false;
 
       for (let i = 0; i < a1.length; i++) {
@@ -209,8 +223,5 @@ export function replaceIntoElement(markdown, element) {
     console.error("Cattown - failed to render markdown! Error: \n", error);
   }
 }
-
-
-
 
 export default returnHTML;

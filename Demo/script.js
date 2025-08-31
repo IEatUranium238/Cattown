@@ -1,7 +1,9 @@
+import { setSettings } from "../src/cattownConfig.js";
 import returnHTML, { appendIntoElement, insertIntoElement, replaceIntoElement } from "../src/cattownMain.js";
-import config from './../src/cattownConfig.json';
-const content = document.getElementById("result");
 
+setSettings("debugMode", true);
+
+const content = document.getElementById("result");
 const field = document.getElementById("input")
 
 // Example use just for returning HTML
