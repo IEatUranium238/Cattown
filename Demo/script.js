@@ -18,6 +18,7 @@ let MarkdownString = `
 ---
 
 This is a normal paragraph with **bold**, *italic*, ***bold italic***, and ~strikethrough~ text.
+**Bold _and italic_ text**.
 
 This paragraph also includes a link to [Google](https://google.com) and an inline image: ![alt text](https://placehold.co/400)
 

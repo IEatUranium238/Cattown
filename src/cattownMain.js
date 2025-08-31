@@ -18,7 +18,7 @@ function debugLog(...args) {
 /**
  * Converts markdown string to sanitized (optionally) HTML string.
  * @param {string} markdown - The markdown text to convert.
- * @returns {string | undefined} - Returns sanitized or raw HTML, or undefined if error occurs.
+ * @returns {string} - Returns sanitized or raw HTML, or empty string if error occurs.
  */
 export function returnHTML(markdown) {
   try {
@@ -46,6 +46,7 @@ export function returnHTML(markdown) {
 
   } catch (error) {
     console.error("Cattown - failed to render markdown! Error:", error);
+    return ""; // return nothing if error
   }
 }
 
