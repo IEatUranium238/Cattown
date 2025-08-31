@@ -7,7 +7,7 @@ Cattown is a pure JavaScript markdown parser with built-in sanitization using DO
 - Pure JavaScript implementation
 - Built-in sanitization with [DOMPurify](https://github.com/cure53/DOMPurify) to prevent XSS attacks
 - Lightweight and easy to use
-- Supports core markdown syntax (more features coming soon)
+- Easy to customise
 
 ## Installation
 
