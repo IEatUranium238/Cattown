@@ -304,6 +304,29 @@ function tokenizeUserInput(input) {
 
     if (trimmed.length === 0) continue; // Skip empty lines
 
+    // Fenced code block: line starting with ```
+    const fencedStartMatch = trimmed.match(/^\`\`\`(\w*)\s*$/);
+    if (fencedStartMatch) {
+      const language = fencedStartMatch[1] || "";
+      const codeLines = [];
+      let j = i + 1;
+      while (j < lines.length && !/^\`\`\`\s*$/.test(lines[j].trim())) {
+        codeLines.push(lines[j]);
+        j++;
+      }
+      if (j < lines.length && /^\`\`\`\s*$/.test(lines[j].trim())) {
+        j++; // skip closing fence
+      }
+      i = j - 1; // adjust loop index
+      const codeContent = codeLines.join("\n");
+      tokens.push({
+        megaType: "codeblock",
+        language,
+        content: codeContent,
+      });
+      continue;
+    }
+
     // Detect horizontal rule - line with 3 or more same characters *, -, or _
     if (/^([*\-_])\1{2,}$/.test(trimmed)) {
       tokens.push({ megaType: "hr" });

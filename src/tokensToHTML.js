@@ -3,6 +3,10 @@ import config from "./cattownConfig.json";
 // Flag to determine if custom styling classes should be applied
 const applyCustomStyle = config.useCustomTheme;
 
+// Code snippet flags
+const useCodeLangName = config.LanguageNameInCode;
+const useCodeIcon = config.IconInCode;
+
 /**
  * Converts tokens generated from the markdown tokenizer into HTML strings.
  *
@@ -49,7 +53,9 @@ function convertTokensToHTML(tokens) {
 
           case "strikethrough":
             return (
-              `<del${applyCustomStyle ? ` class="ct-parsed strikethrough"` : ""}>` +
+              `<del${
+                applyCustomStyle ? ` class="ct-parsed strikethrough"` : ""
+              }>` +
               inlineTokensToHTML(token.content) +
               `</del>`
             );
@@ -63,7 +69,9 @@ function convertTokensToHTML(tokens) {
 
           case "superscript":
             return (
-              `<sup${applyCustomStyle ? ` class="ct-parsed superscript"` : ""}>` +
+              `<sup${
+                applyCustomStyle ? ` class="ct-parsed superscript"` : ""
+              }>` +
               inlineTokensToHTML(token.content) +
               `</sup>`
             );
@@ -196,6 +204,45 @@ function convertTokensToHTML(tokens) {
         case "hr":
           // Horizontal rule
           return `<hr${applyCustomStyle ? ` class="ct-parsed hr"` : ""} />`;
+
+        case "codeblock":
+          const lang = token.language;
+          let langLabel = "";
+
+          if (lang) {
+            let iconHTML = "";
+            let nameHTML = "";
+
+            if (useCodeIcon && useCodeLangName) {
+              iconHTML = `<img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/${lang.toLowerCase()}/${lang.toLowerCase()}-original.svg"
+        alt="${lang} icon"${
+                applyCustomStyle ? ` class="ct-parsed codeblock-image"` : ""
+              } />`;
+            }
+
+            if (useCodeLangName) {
+              nameHTML = escapeHTML(lang);
+            }
+
+            if (iconHTML || nameHTML) {
+              langLabel = `<div${
+                applyCustomStyle ? ` class="ct-parsed codeblock-lang-label"` : ""
+              }>${iconHTML}${nameHTML}</div>`;
+            }
+          }
+
+          // Display code content inside <pre><code> block
+          return (
+            langLabel +
+            `<pre${
+              applyCustomStyle ? ` class="ct-parsed codeblock-pre"` : ""
+            }>` +
+            `<code${
+              applyCustomStyle ? ` class="ct-parsed codeblock-code"` : ""
+            }>` +
+            escapeHTML(token.content) +
+            "</code></pre>"
+          );
 
         default:
           // For unknown/unsupported tokens, render empty string

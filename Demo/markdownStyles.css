@@ -1,132 +1,158 @@
-/* Any parsed element */
+/* Container style for any parsed element - base font and color */
 .ct-parsed {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #333;
-  line-height: 1.6;
-  margin: 0 0 1em 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  color: #222;
+  line-height: 1.5;
+  margin: 0 0 1.25em 0;
 }
 
-/* Headings */
+/* Headings with distinct sizes and subtle colors */
 .ct-parsed.heading {
-  margin-top: 1.2em;
-  margin-bottom: 0.5em;
-  font-weight: 700;
-  color: #2c3e50;
+  margin-top: 1.5em;
+  margin-bottom: 0.6em;
+  font-weight: 600;
+  color: #1a1a1a;
+  scroll-margin-top: 1em; /* improves anchor navigation */
 }
-
 .ct-parsed.heading-1 {
-  font-size: 2.25em;
-  border-bottom: 2px solid #3498db;
+  font-size: 2.25rem;
+  border-bottom: 2px solid #cccccc;
   padding-bottom: 0.3em;
 }
-
 .ct-parsed.heading-2 {
-  font-size: 1.75em;
-  border-bottom: 1.5px solid #2980b9;
+  font-size: 1.75rem;
+  border-bottom: 1.5px solid #dddddd;
   padding-bottom: 0.3em;
 }
-
 .ct-parsed.heading-3 {
-  font-size: 1.3em;
-  color: #34495e;
+  font-size: 1.3rem;
+  color: #333333;
 }
-
 .ct-parsed.heading-4,
 .ct-parsed.heading-5,
 .ct-parsed.heading-6 {
-  font-size: 1.1em;
-  color: #3d566e;
+  font-size: 1.1rem;
+  color: #444444;
 }
 
-/* Paragraph */
+/* Paragraph spacing */
 .ct-parsed.paragraph {
-  margin: 0 0 1em 0;
+  margin: 0 0 1.25em 0;
 }
 
-/* Inline styles */
+/* Text formatting */
 .ct-parsed.bold {
-  font-weight: 700;
+  font-weight: 600;
 }
-
 .ct-parsed.italic {
   font-style: italic;
 }
-
 .ct-parsed.strikethrough {
   text-decoration: line-through;
-  color: #a94442; /* dark red */
+  color: #7a3e3e; /* muted dark red */
 }
 
-/* Links */
+/* Links styled with subtle accent color and smooth hover effect */
 .ct-parsed.link {
-  color: #2980b9;
+  color: #2176bd;
   text-decoration: underline;
   cursor: pointer;
+  transition: color 0.2s ease;
 }
-
 .ct-parsed.link:hover,
 .ct-parsed.link:focus {
-  color: #1c5980;
+  color: #115293;
   text-decoration: none;
+  outline: none;
 }
 
-/* Images */
+/* Images constrained and softened edges */
 .ct-parsed.image {
   max-width: 100%;
   height: auto;
   display: block;
-  margin: 0.75em 0;
-  border-radius: 4px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  margin: 1em 0;
+  border-radius: 6px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
 }
 
-/* Inline code */
+/* Inline code styling with subtle background */
 .ct-parsed.code {
-  background-color: #f6f8fa;
-  font-family: 'Courier New', Courier, monospace;
-  padding: 0.2em 0.4em;
-  border-radius: 3px;
+  background-color: #f5f5f7;
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
   font-size: 0.95em;
-  color: #e83e8c;
+  color: #d6336c;
 }
 
-/* Blockquote */
+/* Blockquote with soft background and subtle border */
 .ct-parsed.blockquote {
   margin: 1em 1em;
-  padding-left: 1em;
-  border-left: 4px solid #95a5a6;
-  color: #555;
+  padding-left: 1.2em;
+  border-left: 4px solid #b5b5b5;
+  color: #555555;
   font-style: italic;
-  background-color: #f9f9f9;
-  border-radius: 3px;
+  background-color: #fafafa;
+  border-radius: 4px;
 }
 
-/* Unordered list */
+/* Lists with comfortable indentation and spacing */
 .ct-parsed.list {
   list-style-type: disc;
-  margin-left: 1.5em;
-  margin-bottom: 1em;
+  margin-left: 1.75em;
+  margin-bottom: 1.25em;
 }
-
 .ct-parsed.list-item {
-  margin-bottom: 0.25em;
+  margin-bottom: 0.3em;
 }
 
-/* Ordered list */
 .ct-parsed.olist {
   list-style-type: decimal;
-  margin-left: 1.5em;
-  margin-bottom: 1em;
+  margin-left: 1.75em;
+  margin-bottom: 1.25em;
 }
-
 .ct-parsed.olist-item {
-  margin-bottom: 0.25em;
+  margin-bottom: 0.3em;
 }
 
-/* Horizontal rule */
+/* Horizontal rule - subtle separator */
 .ct-parsed.hr {
   border: none;
-  border-top: 1px solid #ccc;
-  margin: 1.5em 0;
+  border-top: 1px solid #ddd;
+  margin: 2em 0;
   width: 100%;
+}
+
+/* Code block label - subtle and aligned */
+.ct-parsed.codeblock-lang-label {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.25em;
+  color: #222222;
+  font-size: 0.9em;
+}
+
+/* Code block container with dark background */
+.ct-parsed.codeblock-pre {
+  background-color: #1e1e1e;
+  padding: 1em;
+  overflow-x: auto;
+  border-radius: 6px;
+}
+
+/* Code inside block uses monospace and bright text for readability */
+.ct-parsed.codeblock-code {
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+  color: #f8f8f2;
+  font-size: 0.95em;
+}
+
+.ct-parsed.codeblock-image {
+  height: 1.5em;
+  width: auto;
+  margin: 0;
+  margin-right: 0.3em;
 }
