@@ -1,33 +1,43 @@
 /**
- * Tokenizes a markdown user input string into an array of tokens representing blocks and inline formatting.
+ * Tokenizes a markdown user input string into an array of tokens
+ * representing block elements and inline formatting.
  *
  * @param {string} input - The raw markdown-like string input.
  * @returns {Array} tokens - Array of token objects representing the parsed structure.
  */
 function tokenizeUserInput(input) {
-  const lines = input.split("\n");
+  const lines = input.split("\n"); // Split input by lines for block-level parsing
   const tokens = [];
 
   /**
-   * Tokenizes inline markdown elements within a single line of text.
-   * Supports boldItalic, bold, italic, strikethrough, links, images, and inline code.
+   * Parses inline markdown syntax from a given text string into tokens.
+   * This function does iterative parsing without recursion to handle
+   * nested styles and atomic elements like links and images.
    *
-   * @param {string} text - The text line to tokenize inline syntax.
+   * Supported inline elements:
+   * - Images: ![alt](src)
+   * - Links: [text](href)
+   * - Inline code: `code`
+   * - BoldItalic: ***text*** or ___text___
+   * - Bold: **text** or __text__
+   * - Italic: *text* or _text_
+   * - Strikethrough: ~~text~~ or ~text~
+   *
+   * @param {string} text - Inline markdown text to parse.
    * @returns {Array} inlineTokens - Array of inline token objects.
    */
   function tokenizeInline(text) {
     const inlineTokens = [];
     if (!text) return inlineTokens;
 
-    // Patterns for atomic tokens (link, image, code) prioritized first
+    // Regex patterns for "atomic" inline elements that can't be nested inside others
     const atomicPatterns = [
       { type: "image", regex: /!\[([^\]]*)\]\(([^)]+)\)/g },
       { type: "link", regex: /\[([^\]]+)\]\(([^)]+)\)/g },
       { type: "code", regex: /`([^`]+)`/g },
     ];
 
-    // Markers for styled tokens boldItalic, bold, italic, strikethrough
-    // Order matters: boldItalic first, then bold, then italic, then strikethrough
+    // Markers for styled inline elements, ordered by precedence (longest first)
     const styledMarkers = [
       { type: "boldItalic", markers: ["***", "___"] },
       { type: "bold", markers: ["**", "__"] },
@@ -35,120 +45,120 @@ function tokenizeUserInput(input) {
       { type: "strikethrough", markers: ["~~", "~"] },
     ];
 
-    // Helper function to find earliest match among patterns with regex global flag
-    function findEarliestMatch(patterns, str) {
-      let earliest = null;
-      for (const { type, regex } of patterns) {
-        regex.lastIndex = 0;
-        const match = regex.exec(str);
-        if (match) {
-          if (earliest === null || match.index < earliest.index) {
-            earliest = { type, match, index: match.index };
+    // Stack for iterative parsing of nested inline formatting
+    // Each frame holds remaining text to parse and current tokens to push to
+    const stack = [{ remainingText: text, tokens: inlineTokens }];
+
+    // Loop while there are frames to process on stack
+    while (stack.length > 0) {
+      const frame = stack.pop();
+      let str = frame.remainingText;
+      const tokensArr = frame.tokens;
+
+      while (str.length > 0) {
+        let earliestAtomic = null;
+
+        // Find earliest atomic match (image, link, or code)
+        for (const { type, regex } of atomicPatterns) {
+          regex.lastIndex = 0; // Reset regex state for global search
+          const match = regex.exec(str);
+          if (match) {
+            if (!earliestAtomic || match.index < earliestAtomic.index) {
+              earliestAtomic = { type, match, index: match.index };
+            }
           }
         }
-      }
-      return earliest;
-    }
 
-    // Helper to find earliest styled marker pair
-    function findEarliestStyledMarker(str) {
-      let earliest = null;
-      for (const { type, markers } of styledMarkers) {
-        for (const marker of markers) {
-          const startIndex = str.indexOf(marker);
-          if (startIndex !== -1) {
-            const endIndex = str.indexOf(marker, startIndex + marker.length);
-            if (endIndex !== -1) {
-              if (earliest === null || startIndex < earliest.startIndex) {
-                earliest = { type, marker, startIndex, endIndex };
+        let earliestStyled = null;
+
+        // Find earliest styled marker pair with matching start/end markers
+        for (const { type, markers } of styledMarkers) {
+          for (const marker of markers) {
+            const startIndex = str.indexOf(marker);
+            if (startIndex !== -1) {
+              // Look for corresponding closing marker after start marker
+              const endIndex = str.indexOf(marker, startIndex + marker.length);
+              if (endIndex !== -1) {
+                if (!earliestStyled || startIndex < earliestStyled.startIndex) {
+                  earliestStyled = { type, marker, startIndex, endIndex };
+                }
               }
             }
           }
         }
-      }
-      return earliest;
-    }
 
-    // Main parsing loop for current text
-    while (text.length > 0) {
-      // 1. Look for earliest atomic token (image, link, code)
-      const atomicMatch = findEarliestMatch(atomicPatterns, text);
+        // Determine which matched element comes first
+        let earliestMatch = null;
+        if (earliestAtomic && earliestStyled) {
+          earliestMatch =
+            earliestAtomic.index <= earliestStyled.startIndex
+              ? earliestAtomic
+              : earliestStyled;
+        } else {
+          earliestMatch = earliestAtomic || earliestStyled;
+        }
 
-      // 2. Look for earliest styled marker
-      const styledMatch = findEarliestStyledMarker(text);
+        // No more markdown patterns found, push remaining text as plain text
+        if (!earliestMatch) {
+          if (str.length > 0) {
+            tokensArr.push({ type: "text", content: str });
+          }
+          break;
+        }
 
-      // Determine which comes first
-      let earliestMatch = null;
-      if (atomicMatch && styledMatch) {
-        earliestMatch =
-          atomicMatch.index <= styledMatch.startIndex
-            ? atomicMatch
-            : styledMatch;
-      } else {
-        earliestMatch = atomicMatch || styledMatch;
-      }
+        // Push any text before the earliest matched token as plain text
+        const preText =
+          earliestMatch.type === "link" ||
+          earliestMatch.type === "image" ||
+          earliestMatch.type === "code"
+            ? str.slice(0, earliestMatch.index)
+            : str.slice(0, earliestMatch.startIndex);
 
-      if (!earliestMatch) {
-        // No more markdown tokens found; push rest as plain text
-        inlineTokens.push({ type: "text", content: text });
-        break;
-      }
+        if (preText.length > 0) {
+          tokensArr.push({ type: "text", content: preText });
+        }
 
-      // Add text before match as plain text if any
-      const preText =
-        earliestMatch.type === "link" ||
-        earliestMatch.type === "image" ||
-        earliestMatch.type === "code"
-          ? text.slice(0, earliestMatch.index)
-          : text.slice(0, earliestMatch.startIndex);
-      if (preText) {
-        inlineTokens.push({ type: "text", content: preText });
-      }
-
-      if (earliestMatch.type === "image") {
-        // Image token
-        inlineTokens.push({
-          type: "image",
-          alt: earliestMatch.match[1],
-          src: earliestMatch.match[2],
-        });
-        text = text.slice(earliestMatch.index + earliestMatch.match[0].length);
-      } else if (earliestMatch.type === "link") {
-        // Link token
-        // Tokenize the link text itself in case it has styles (recursive)
-        const linkTextTokens = tokenizeInline(earliestMatch.match[1]);
-        inlineTokens.push({
-          type: "link",
-          content: linkTextTokens,
-          href: earliestMatch.match[2],
-        });
-        text = text.slice(earliestMatch.index + earliestMatch.match[0].length);
-      } else if (earliestMatch.type === "code") {
-        // Code token, just take content as is
-        inlineTokens.push({
-          type: "code",
-          content: earliestMatch.match[1],
-        });
-        text = text.slice(earliestMatch.index + earliestMatch.match[0].length);
-      } else if (
-        earliestMatch.type === "boldItalic" ||
-        earliestMatch.type === "bold" ||
-        earliestMatch.type === "italic" ||
-        earliestMatch.type === "strikethrough"
-      ) {
-        const { marker, startIndex, endIndex, type } = earliestMatch;
-        const innerText = text.slice(startIndex + marker.length, endIndex);
-        // Recursively tokenize inside the styled segment
-        const innerTokens = tokenizeInline(innerText);
-        inlineTokens.push({
-          type,
-          content: innerTokens,
-        });
-        text = text.slice(endIndex + marker.length);
-      } else {
-        // Fallback (should not happen)
-        inlineTokens.push({ type: "text", content: text });
-        break;
+        // Handle the earliest matched inline element by type
+        if (earliestMatch.type === "image") {
+          tokensArr.push({
+            type: "image",
+            alt: earliestMatch.match[1],
+            src: earliestMatch.match[2],
+          });
+          // Remove parsed text from str and continue
+          str = str.slice(earliestMatch.index + earliestMatch.match[0].length);
+        } else if (earliestMatch.type === "link") {
+          const linkText = earliestMatch.match[1];
+          const href = earliestMatch.match[2];
+          // Create a link token, parse its text content recursively
+          const linkToken = { type: "link", content: [], href };
+          tokensArr.push(linkToken);
+          str = str.slice(earliestMatch.index + earliestMatch.match[0].length);
+          // Push current remaining str back to stack to continue parsing after the link
+          stack.push({ remainingText: str, tokens: tokensArr });
+          // Parse link text content next
+          stack.push({ remainingText: linkText, tokens: linkToken.content });
+          break; // Break to process the stack
+        } else if (earliestMatch.type === "code") {
+          tokensArr.push({
+            type: "code",
+            content: earliestMatch.match[1],
+          });
+          str = str.slice(earliestMatch.index + earliestMatch.match[0].length);
+        } else {
+          // styled inline formatting: bold, italic, strikethrough (with nested content)
+          const { marker, startIndex, endIndex, type } = earliestMatch;
+          const innerText = str.slice(startIndex + marker.length, endIndex);
+          const styledToken = { type, content: [] };
+          tokensArr.push(styledToken);
+          // Remove processed styled token text from str
+          str = str.slice(endIndex + marker.length);
+          // Push current remaining str back to stack for later processing
+          stack.push({ remainingText: str, tokens: tokensArr });
+          // Parse inner styled content next
+          stack.push({ remainingText: innerText, tokens: styledToken.content });
+          break; // Break to process next stack frame
+        }
       }
     }
 
@@ -156,92 +166,125 @@ function tokenizeUserInput(input) {
   }
 
   /**
-   * Collects consecutive blockquote lines starting at startIndex and recursively tokenizes their content.
+   * Tokenizes blockquote lines into tokens by stripping leading '>' characters,
+   * then parsing their content via the main tokenizer helper without recursion.
+   * This breaks recursion cycles and handles blockquotes properly.
    *
-   * @param {number} startIndex - Line index to start processing blockquote.
-   * @returns {object} - Tokenized content and the index where blockquote ends.
+   * @param {Array<string>} blockquoteLines - Lines starting with '>'.
+   * @returns {Array} tokens - Parsed tokens inside the blockquote.
    */
-  function consumeBlockquote(startIndex) {
-    const blockquoteLines = [];
-    let i = startIndex;
+  function tokenizeBlockquoteLines(blockquoteLines) {
+    // Remove leading blockquote marker '> ' from each line and join back
+    const blockquoteContent = blockquoteLines
+      .map((line) => line.replace(/^>\s?/, ""))
+      .join("\n");
+    // Tokenize blockquote content with the iterative helper (no recursion)
+    return tokenizeUserInputIterative(blockquoteContent);
+  }
 
-    // Collect lines that begin with '>' or blank lines (inside blockquotes)
-    while (i < lines.length) {
-      const line = lines[i];
-      if (/^>/.test(line.trim())) {
-        blockquoteLines.push(line);
-        i++;
-      } else if (line.trim() === "") {
-        // Allow blank lines inside blockquotes for paragraph breaks
-        blockquoteLines.push(line);
-        i++;
-      } else {
-        break;
+  /**
+   * Iterative helper to tokenize multiline input, like blockquote content,
+   * avoiding recursion by copying main block parsing logic.
+   *
+   * Supports the same block types (headings, lists, paragraphs, hr, blockquotes)
+   * but parses blockquotes inline without recursive calls.
+   *
+   * @param {string} multilineInput - Multiline string inside blockquote.
+   * @returns {Array} tokens - Parsed tokens.
+   */
+  function tokenizeUserInputIterative(multilineInput) {
+    const innerLines = multilineInput.split("\n");
+    const innerTokens = [];
+    let idx = 0;
+
+    while (idx < innerLines.length) {
+      const line = innerLines[idx];
+      const trimmed = line.trim();
+
+      if (trimmed.length === 0) {
+        idx++;
+        continue; // Skip empty lines
       }
+
+      // Horizontal rule (3 or more repeated *, -, or _)
+      if (/^([*\-_])\1{2,}$/.test(trimmed)) {
+        innerTokens.push({ megaType: "hr" });
+        idx++;
+        continue;
+      }
+
+      // Nested blockquotes in blockquotes parsed as paragraphs with inline tokens (no recursion)
+      if (/^>\s?/.test(trimmed)) {
+        innerTokens.push({
+          megaType: "paragraph",
+          content: tokenizeInline(trimmed.replace(/^>\s?/, "")),
+        });
+        idx++;
+        continue;
+      }
+
+      // Ordered lists (lines starting with number and dot)
+      if (/^\d+\.\s+/.test(trimmed)) {
+        const items = [];
+        while (idx < innerLines.length) {
+          const l = innerLines[idx].trim();
+          const m = l.match(/^(\d+)\.\s+(.*)$/);
+          if (!m) break;
+          items.push(tokenizeInline(m[2]));
+          idx++;
+        }
+        innerTokens.push({ megaType: "olist", items });
+        continue;
+      }
+
+      // Unordered lists (lines starting with '-' or '*')
+      if (/^[-*]\s+/.test(trimmed)) {
+        const items = [];
+        while (idx < innerLines.length) {
+          const l = innerLines[idx].trim();
+          const m = l.match(/^([-*])\s+(.*)$/);
+          if (!m) break;
+          items.push(tokenizeInline(m[2]));
+          idx++;
+        }
+        innerTokens.push({ megaType: "list", items });
+        continue;
+      }
+
+      // Headings (1 to 6 # characters)
+      const headingMatch = trimmed.match(/^(#{1,6})\s+(.*)$/);
+      if (headingMatch) {
+        const level = headingMatch[1].length;
+        innerTokens.push({
+          megaType: "heading",
+          level,
+          content: tokenizeInline(headingMatch[2]),
+        });
+        idx++;
+        continue;
+      }
+
+      // Default to paragraph block with inline tokens
+      innerTokens.push({
+        megaType: "paragraph",
+        content: tokenizeInline(trimmed),
+      });
+
+      idx++;
     }
 
-    // Remove blockquote markers '>' and optional space from each line
-    const processedLines = blockquoteLines.map((line) =>
-      line.replace(/^>\s?/, "")
-    );
-
-    // Join and tokenize blockquote content recursively
-    const blockquoteContent = processedLines.join("\n");
-    const content = tokenizeUserInput(blockquoteContent);
-
-    return { content, endIndex: i };
+    return innerTokens;
   }
 
-  /**
-   * Collects consecutive unordered list items starting at startIndex.
-   *
-   * @param {number} startIndex - Line index to start processing unordered list.
-   * @returns {object} - Array of list item tokens and index where list ends.
-   */
-  function consumeUnorderedList(startIndex) {
-    const items = [];
-    let i = startIndex;
-
-    while (i < lines.length) {
-      const line = lines[i].trim();
-      const match = line.match(/^([-*])\s+(.*)$/); // match lines starting with '-' or '*'
-      if (!match) break;
-      items.push(tokenizeInline(match[2]));
-      i++;
-    }
-
-    return { items, endIndex: i };
-  }
-
-  /**
-   * Collects consecutive ordered list items starting at startIndex.
-   *
-   * @param {number} startIndex - Line index to start processing ordered list.
-   * @returns {object} - Array of list item tokens and index where list ends.
-   */
-  function consumeOrderedList(startIndex) {
-    const items = [];
-    let i = startIndex;
-
-    while (i < lines.length) {
-      const line = lines[i].trim();
-      const match = line.match(/^(\d+)\.\s+(.*)$/); // match lines starting with number + '.'
-      if (!match) break;
-      items.push(tokenizeInline(match[2]));
-      i++;
-    }
-
-    return { items, endIndex: i };
-  }
-
-  // Main parsing loop: Processes each input line sequentially
+  // ----------------------- MAIN BLOCK PARSING LOOP -------------------------
+  // Iterate through each line of input to detect block elements and parse them
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const trimmed = line.trim();
 
-    if (trimmed.length === 0) continue; // skip empty lines
+    if (trimmed.length === 0) continue; // Skip empty lines
 
-    // Detect horizontal rules - lines with 3+ repeated '*', '-', or '_'
+    // Detect horizontal rule - line with 3 or more same characters *, -, or _
     if (/^([*\-_])\1{2,}$/.test(trimmed)) {
       tokens.push({ megaType: "hr" });
       continue;
@@ -249,42 +292,71 @@ function tokenizeUserInput(input) {
 
     // Blockquote lines start with '>'
     if (/^>\s?/.test(trimmed)) {
-      const { content, endIndex } = consumeBlockquote(i);
+      // Collect all consecutive blockquote lines to form blockquote content
+      const blockquoteLines = [];
+      let j = i;
+      while (j < lines.length) {
+        const l = lines[j];
+        if (/^>/.test(l.trim()) || l.trim() === "") {
+          blockquoteLines.push(l);
+          j++;
+        } else {
+          break;
+        }
+      }
+      // Tokenize the collected blockquote lines
+      const content = tokenizeBlockquoteLines(blockquoteLines);
+      // Push tokens with megaType "blockquote"
       tokens.push({ megaType: "blockquote", content });
-      i = endIndex - 1; // move index to end of blockquote
+      i = j - 1; // Advance line index to end of blockquote
       continue;
     }
 
-    // Ordered list items start with number + '.'
+    // Ordered list items: lines starting with number + '.'
     if (/^\d+\.\s+/.test(trimmed)) {
-      const { items, endIndex } = consumeOrderedList(i);
+      const items = [];
+      let j = i;
+      while (j < lines.length) {
+        const l = lines[j].trim();
+        const m = l.match(/^(\d+)\.\s+(.*)$/);
+        if (!m) break;
+        items.push(tokenizeInline(m[2]));
+        j++;
+      }
       tokens.push({ megaType: "olist", items });
-      i = endIndex - 1;
+      i = j - 1;
       continue;
     }
 
-    // Unordered list items start with '-' or '*'
+    // Unordered list items: lines starting with '-' or '*'
     if (/^[-*]\s+/.test(trimmed)) {
-      const { items, endIndex } = consumeUnorderedList(i);
+      const items = [];
+      let j = i;
+      while (j < lines.length) {
+        const l = lines[j].trim();
+        const m = l.match(/^([-*])\s+(.*)$/);
+        if (!m) break;
+        items.push(tokenizeInline(m[2]));
+        j++;
+      }
       tokens.push({ megaType: "list", items });
-      i = endIndex - 1;
+      i = j - 1;
       continue;
     }
 
-    // Headings (levels 1 to 6)
+    // Headings (# to ###### followed by space and text)
     const headingMatch = trimmed.match(/^(#{1,6})\s+(.*)$/);
     if (headingMatch) {
       const level = headingMatch[1].length;
-      const content = headingMatch[2];
       tokens.push({
         megaType: "heading",
         level,
-        content: tokenizeInline(content),
+        content: tokenizeInline(headingMatch[2]),
       });
       continue;
     }
 
-    // Otherwise, treat as a paragraph
+    // Default fallthrough: treat line as a paragraph with inline tokens
     tokens.push({
       megaType: "paragraph",
       content: tokenizeInline(trimmed),
