@@ -150,9 +150,56 @@
   font-size: 0.95em;
 }
 
+/* Image icon for language name in code block */
 .ct-parsed.codeblock-image {
   height: 1.5em;
   width: auto;
   margin: 0;
   margin-right: 0.3em;
+}
+
+/* Table wrapper */
+.ct-parsed.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+  font-family: inherit;
+  font-size: 1rem;
+  background-color: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Table header row */
+.ct-parsed.table thead tr {
+  background-color: #f2f2f2;
+}
+
+/* Table header cells */
+.ct-parsed.table-header-cell {
+  padding: 0.6em 1em;
+  text-align: left;
+  font-weight: 600;
+  border: 1px solid #ccc;
+  color: #333;
+}
+
+/* Table body rows */
+.ct-parsed.table-row:nth-child(even) {
+  background-color: #fafafa;
+}
+
+/* Table data cells */
+.ct-parsed.table-cell {
+  padding: 0.5em 1em;
+  border: 1px solid #ccc;
+  vertical-align: top;
+  color: #444;
+}
+
+/* Responsive table: horizontally scrollable on small screens */
+@media (max-width: 600px) {
+  .ct-parsed.table {
+    overflow-x: auto;
+    white-space: nowrap;
+  }
 }

@@ -205,6 +205,7 @@ function convertTokensToHTML(tokens) {
           // Horizontal rule
           return `<hr${applyCustomStyle ? ` class="ct-parsed hr"` : ""} />`;
 
+        // Code block
         case "codeblock":
           const lang = token.language;
           let langLabel = "";
@@ -226,7 +227,9 @@ function convertTokensToHTML(tokens) {
 
             if (iconHTML || nameHTML) {
               langLabel = `<div${
-                applyCustomStyle ? ` class="ct-parsed codeblock-lang-label"` : ""
+                applyCustomStyle
+                  ? ` class="ct-parsed codeblock-lang-label"`
+                  : ""
               }>${iconHTML}${nameHTML}</div>`;
             }
           }
@@ -243,6 +246,39 @@ function convertTokensToHTML(tokens) {
             escapeHTML(token.content) +
             "</code></pre>"
           );
+
+        // Table
+        case "table": {
+          const headerHTML = token.header
+            .map(
+              (cellTokens) =>
+                `<th${
+                  applyCustomStyle ? ` class="ct-parsed table-header-cell"` : ""
+                }>${inlineTokensToHTML(cellTokens)}</th>`
+            )
+            .join("");
+          const rowsHTML = token.rows
+            .map(
+              (row) =>
+                `<tr${
+                  applyCustomStyle ? ` class="ct-parsed table-row"` : ""
+                }>` +
+                row
+                  .map(
+                    (cellTokens) =>
+                      `<td${
+                        applyCustomStyle ? ` class="ct-parsed table-cell"` : ""
+                      }>${inlineTokensToHTML(cellTokens)}</td>`
+                  )
+                  .join("") +
+                `</tr>`
+            )
+            .join("\n");
+          return `<table${applyCustomStyle ? ` class="ct-parsed table"` : ""}>
+    <thead><tr>${headerHTML}</tr></thead>
+    <tbody>${rowsHTML}</tbody>
+  </table>`;
+        }
 
         default:
           // For unknown/unsupported tokens, render empty string

@@ -399,6 +399,40 @@ function tokenizeUserInput(input) {
       continue;
     }
 
+    // Table
+    if (/\|/.test(trimmed)) {
+      // Peek next line for separator
+      const nextLine = i + 1 < lines.length ? lines[i + 1].trim() : "";
+      if (/^\|?(\s*:?-+:?\s*\|)+\s*:?-+:?\s*\|?$/.test(nextLine)) {
+        const tableHeaderCells = trimmed
+          .split("|")
+          .map((s) => s.trim())
+          .filter((s) => s.length > 0);
+        const tableRows = [];
+        i += 2;
+        while (i < lines.length) {
+          const rowLine = lines[i].trim();
+          if (!rowLine || !rowLine.includes("|")) break; // End of table
+          // split row cells similarly
+          const rowCells = rowLine
+            .split("|")
+            .map((s) => s.trim())
+            .filter((s) => s.length > 0);
+          tableRows.push(rowCells);
+          i++;
+        }
+        // tokenize header cells inline
+        const header = tableHeaderCells.map((cell) => tokenizeInline(cell));
+        // tokenize each row cell inline
+        const rows = tableRows.map((row) =>
+          row.map((cell) => tokenizeInline(cell))
+        );
+        tokens.push({ megaType: "table", header, rows });
+        i--;
+        continue;
+      }
+    }
+
     // Default fallthrough: treat line as a paragraph with inline tokens
     tokens.push({
       megaType: "paragraph",
