@@ -1,32 +1,43 @@
 {
+  // TYPESCRIPT CONFIGURATION FOR CATTOWN
+  // 
+  // This configuration generates TypeScript declaration files (.d.ts) for Cattown
+  // to provide type information for TypeScript users. It processes JavaScript files
+  // and creates type definitions without emitting JavaScript output.
+  //
+  // Key Purpose:
+  // - Generate .d.ts files for TypeScript support
+  // - Provide IntelliSense and type checking for library users
+  // - Enable better IDE support and development experience
+  
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "ESNext",
-    "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "allowJs": true,
-    "checkJs": false,
-    "declaration": true,
-    "declarationMap": true,
-    "emitDeclarationOnly": true,
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "strict": false,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": false,
-    "jsx": "preserve"
+    "target": "ES2020",                        // Target ES2020 for modern features
+    "module": "ESNext",                        // Use ES modules format
+    "moduleResolution": "node",                // Node.js module resolution
+    "allowSyntheticDefaultImports": true,      // Allow default imports from CommonJS
+    "esModuleInterop": true,                   // Enable ES module interoperability
+    "allowJs": true,                           // Process JavaScript files
+    "checkJs": false,                          // Don't type-check JS files
+    "declaration": true,                       // Generate .d.ts declaration files
+    "declarationMap": true,                    // Generate .d.ts.map source maps
+    "emitDeclarationOnly": true,               // Only emit declarations, no JS
+    "outDir": "./dist",                        // Output directory for declarations
+    "rootDir": "./src",                        // Source directory
+    "strict": false,                           // Relaxed type checking for JS processing
+    "skipLibCheck": true,                      // Skip type checking of library files
+    "forceConsistentCasingInFileNames": true,  // Enforce consistent file naming
+    "resolveJsonModule": true,                 // Allow importing JSON files
+    "isolatedModules": true,                   // Each file is a separate module
+    "noEmit": false,                           // Allow emitting (for declarations)
+    "jsx": "preserve"                          // Preserve JSX (not used but prevents errors)
   },
   "include": [
-    "src/**/*"
+    "src/**/*"                                 // Include all files in src directory
   ],
   "exclude": [
-    "node_modules",
-    "dist",
-    "Tests",
-    "Demo"
+    "node_modules",                            // Exclude dependencies
+    "dist",                                    // Exclude build output
+    "Tests",                                   // Exclude test files
+    "Demo"                                     // Exclude demo files
   ]
 }

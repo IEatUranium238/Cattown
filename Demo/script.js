@@ -1,5 +1,8 @@
 import { setSettings } from "../src/cattownConfig.js";
 import returnHTML, { appendIntoElement, insertIntoElement, replaceIntoElement } from "../src/cattownMain.js";
+import { setDOMPurify } from "../src/cattownMain.js";
+import DOMpurify from 'dompurify';
+setDOMPurify("BABA")
 
 setSettings("debugMode", true);
 
@@ -14,5 +17,5 @@ const field = document.getElementById("input")
 
 
 field.addEventListener("input", () => {
-  replaceIntoElement(field.value,content)
+  insertIntoElement(field.value,content)
 })

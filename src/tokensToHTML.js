@@ -1,25 +1,94 @@
+/**
+ * CATTOWN TOKENS-TO-HTML CONVERTER
+ * 
+ * This module converts the structured token objects produced by the tokenizer
+ * into clean, semantic HTML. It handles both block-level elements (paragraphs,
+ * headings, lists, tables, code blocks) and inline elements (bold, italic,
+ * links, images, etc.).
+ * 
+ * Features:
+ * - Comprehensive HTML generation for all markdown elements
+ * - Configurable CSS class application for custom styling
+ * - Built-in HTML escaping for security
+ * - Language icon support for code blocks
+ * - Responsive table containers
+ * - Semantic HTML structure
+ * 
+ * The converter respects configuration settings to control:
+ * - Whether custom CSS classes are applied
+ * - Code block language display options
+ * - Icon display in code blocks
+ */
+
 import getSettings from "./cattownConfig";
 
 /**
- * Converts tokens generated from the markdown tokenizer into HTML strings.
- *
- * @param {Array} tokens - Array of parsed token objects.
- * @returns {string} - Resulting HTML string.
+ * Converts structured markdown tokens into clean, semantic HTML.
+ * 
+ * This is the second stage of the markdown conversion pipeline (after tokenization).
+ * It transforms the abstract syntax tree of tokens into actual HTML elements,
+ * applying appropriate tags, attributes, and CSS classes based on configuration.
+ * 
+ * The function handles:
+ * - Block elements: headers, paragraphs, lists, tables, code blocks, blockquotes
+ * - Inline elements: bold, italic, links, images, code spans, strikethrough
+ * - Security: HTML escaping to prevent injection attacks
+ * - Styling: Configurable CSS class application
+ * - Accessibility: Semantic HTML structure and proper attributes
+ * 
+ * @param {Array} tokens - Array of parsed token objects from the tokenizer.
+ *   Each token has a 'megaType' (for blocks) or 'type' (for inline) property
+ *   and associated content/configuration properties.
+ * 
+ * @returns {string} Complete HTML string ready for insertion into DOM or
+ *   sanitization. Returns empty string for invalid input.
+ * 
+ * @example
+ * const tokens = [
+ *   { megaType: 'heading', level: 1, content: [...] },
+ *   { megaType: 'paragraph', content: [...] }
+ * ];
+ * const html = convertTokensToHTML(tokens);
+ * // Returns: "<h1>...</h1>\n<p>...</p>"
  */
 function convertTokensToHTML(tokens) {
-  // Flag to determine if custom styling classes should be applied
+  // Get configuration settings for HTML generation behavior
   const applyCustomStyle = getSettings("useCustomTheme");
-
-  // Code snippet flags
   const useCodeLangName = getSettings("LanguageNameInCode");
   const useCodeIcon = getSettings("IconInCode");
 
   /**
-   * Converts an array of inline tokens to HTML.
-   * Recursively escapes content and applies styles/classes if enabled.
-   *
-   * @param {Array} inlineTokens - Array of inline token objects.
-   * @returns {string} - HTML string representing the inline content.
+   * Converts inline markdown tokens into HTML strings with proper escaping.
+   * 
+   * This recursive function handles all inline markdown elements like bold,
+   * italic, links, images, and code spans. It properly escapes content to
+   * prevent HTML injection while preserving the intended formatting.
+   * 
+   * Supported inline elements:
+   * - text: Plain text (HTML escaped)
+   * - bold/italic/boldItalic: Text formatting elements
+   * - strikethrough: Crossed-out text
+   * - subscript/superscript: Mathematical notation
+   * - link: Hyperlinks with automatic HTTPS prefixing
+   * - image: Images with alt text and proper attributes
+   * - code: Inline code spans
+   * - highlight: Highlighted/marked text
+   * 
+   * @param {Array} inlineTokens - Array of inline token objects, each with:
+   *   - type: The kind of inline element (text, bold, link, etc.)
+   *   - content: Either string content or array of nested tokens
+   *   - Additional properties for specific types (href for links, src/alt for images)
+   * 
+   * @returns {string} HTML string with proper escaping and CSS classes applied
+   *   based on configuration. Nested tokens are processed recursively.
+   * 
+   * @example
+   * const tokens = [
+   *   { type: 'text', content: 'Hello ' },
+   *   { type: 'bold', content: [{ type: 'text', content: 'world' }] },
+   *   { type: 'text', content: '!' }
+   * ];
+   * // Returns: "Hello <strong>world</strong>!"
    */
   function inlineTokensToHTML(inlineTokens) {
     return inlineTokens
@@ -125,10 +194,28 @@ function convertTokensToHTML(tokens) {
   }
 
   /**
-   * Escapes special HTML characters to their entity equivalents to prevent injection.
-   *
-   * @param {string} str - The string to escape.
-   * @returns {string} Escaped string safe for HTML content.
+   * Escapes HTML special characters to prevent XSS injection attacks.
+   * 
+   * This security function converts potentially dangerous characters into
+   * their HTML entity equivalents, making them safe for display in HTML
+   * content without being interpreted as markup.
+   * 
+   * Characters escaped:
+   * - & → &amp; (ampersand - must be first to avoid double-escaping)
+   * - < → &lt; (less than - prevents opening tags)
+   * - > → &gt; (greater than - prevents closing tags)
+   * - " → &quot; (double quote - prevents attribute breaking)
+   * - ' → &#39; (single quote - prevents attribute breaking)
+   * 
+   * @param {string} str - The potentially unsafe string to escape
+   * @returns {string} HTML-safe string with special characters escaped
+   * 
+   * @example
+   * escapeHTML('<script>alert("xss")</script>');
+   * // Returns: '&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;'
+   * 
+   * escapeHTML('User input: "Hello & goodbye"');
+   * // Returns: 'User input: &quot;Hello &amp; goodbye&quot;'
    */
   function escapeHTML(str) {
     return String(str).replace(/[&<>"']/g, (char) => {
@@ -150,16 +237,31 @@ function convertTokensToHTML(tokens) {
   }
 
   /**
-   * Escapes quote characters in attribute values to prevent HTML attribute-breaking.
-   *
-   * @param {string} str - The attribute string to escape.
-   * @returns {string} Escaped string safe for use in HTML attributes.
+   * Escapes quote characters specifically for use in HTML attribute values.
+   * 
+   * This function is specialized for cleaning up strings that will be used
+   * as HTML attribute values (like href, src, alt). It focuses on quote
+   * characters that could break out of attribute value boundaries.
+   * 
+   * @param {string} str - The attribute value string to escape
+   * @returns {string} String safe for use in HTML attribute values
+   * 
+   * @example
+   * const url = 'https://example.com/search?q="test"';
+   * const html = `<a href="${escapeAttribute(url)}">Link</a>`;
+   * // Safe: <a href="https://example.com/search?q=&quot;test&quot;">Link</a>
+   * 
+   * const altText = "Image of user's profile";
+   * const img = `<img alt="${escapeAttribute(altText)}" />`;
+   * // Safe: <img alt="Image of user&#39;s profile" />
    */
   function escapeAttribute(str) {
     return String(str).replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
 
-  // Convert block-level tokens to HTML, joining with newline for readability
+  // Main conversion loop: Process each block-level token and convert to HTML
+  // Block tokens include: heading, paragraph, list, table, codeblock, etc.
+  // Results are joined with newlines for readable HTML output
   return tokens
     .map((token) => {
       switch (token.megaType) {

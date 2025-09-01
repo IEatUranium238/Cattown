@@ -1,33 +1,117 @@
 /**
- * Tokenizes a markdown user input string into an array of tokens
- * representing block elements and inline formatting.
- *
- * @param {string} input - The raw markdown-like string input.
- * @returns {Array} tokens - Array of token objects representing the parsed structure.
+ * CATTOWN MARKDOWN TOKENIZER
+ * 
+ * This module implements the first stage of markdown parsing: tokenization.
+ * It converts raw markdown text into a structured array of token objects
+ * representing both block-level elements (headers, paragraphs, lists) and
+ * inline formatting (bold, italic, links, images).
+ * 
+ * Key Features:
+ * - Iterative parsing algorithm (no recursion) for better performance
+ * - Comprehensive markdown syntax support
+ * - Proper nesting of inline elements within block elements
+ * - Special handling for atomic elements (links, images, code)
+ * - Blockquote support with nested content
+ * - Table parsing with header detection
+ * - Task list support with checkbox states
+ * 
+ * Algorithm Overview:
+ * 1. Split input into lines for block-level parsing
+ * 2. Process each line to identify block elements
+ * 3. For each block, parse inline content iteratively
+ * 4. Handle special cases like code blocks, tables, lists
+ * 
+ * The tokenizer produces a hierarchical structure where:
+ * - Block tokens have 'megaType' property (heading, paragraph, list, etc.)
+ * - Inline tokens have 'type' property (text, bold, italic, link, etc.)
+ * - Content can be either strings or arrays of nested tokens
+ */
+
+/**
+ * Converts raw markdown text into structured token objects.
+ * 
+ * This is the main entry point for the tokenization process. It analyzes
+ * markdown syntax and produces an abstract syntax tree of tokens that
+ * can be converted to HTML by the tokensToHTML module.
+ * 
+ * The function handles the complete markdown specification including:
+ * - Headers (# ## ### #### ##### ######)
+ * - Paragraphs and line breaks
+ * - Bold (**text** or __text__) and italic (*text* or _text_)
+ * - Links [text](url) and images ![alt](src)
+ * - Code blocks (```lang) and inline code (`code`)
+ * - Lists (ordered and unordered) and task lists
+ * - Tables with header rows
+ * - Blockquotes (> text)
+ * - Horizontal rules (--- *** ___)
+ * - Strikethrough (~~text~~), highlight (==text==)
+ * - Subscript (~text~) and superscript (^text^)
+ * 
+ * @param {string} input - Raw markdown text to parse. Can contain any
+ *   valid markdown syntax including multi-line content.
+ * 
+ * @returns {Array} Array of token objects representing the parsed structure.
+ *   Each token has either:
+ *   - megaType: for block elements (heading, paragraph, list, table, etc.)
+ *   - type: for inline elements (text, bold, italic, link, etc.)
+ *   Plus additional properties for content, attributes, and metadata.
+ * 
+ * @example
+ * const tokens = tokenizeUserInput("# Hello\n**Bold** text");
+ * // Returns: [
+ * //   { megaType: 'heading', level: 1, content: [...] },
+ * //   { megaType: 'paragraph', content: [...] }
+ * // ]
  */
 function tokenizeUserInput(input) {
   const lines = input.split("\n"); // Split input by lines for block-level parsing
   const tokens = [];
 
   /**
-   * Parses inline markdown syntax from a given text string into tokens.
-   * This function does iterative parsing without recursion to handle
-   * nested styles and atomic elements like links and images.
-   *
-   * Supported inline elements:
-   * - Images: ![alt](src)
-   * - Links: [text](href)
-   * - Inline code: `code`
-   * - BoldItalic: ***text*** or ___text___
-   * - Bold: **text** or __text__
-   * - Italic: *text* or _text_
-   * - Highlight: ==text==
-   * - Strikethrough: ~~text~~
-   * - Subscript: ~text~
-   * - Superscript: ^text^
-   *
-   * @param {string} text - Inline markdown text to parse.
-   * @returns {Array} inlineTokens - Array of inline token objects.
+   * Parses inline markdown elements using an iterative stack-based algorithm.
+   * 
+   * This is one of the most complex functions in Cattown. It handles nested
+   * inline formatting while properly managing precedence and avoiding infinite
+   * recursion. The algorithm uses a processing stack to handle nested elements
+   * like bold text containing italic text containing links.
+   * 
+   * Processing Strategy:
+   * 1. Atomic elements (images, links, code) are parsed first and cannot be nested
+   * 2. Styled elements (bold, italic) are parsed by precedence (longest markers first)
+   * 3. Nested content is processed by pushing new frames onto the processing stack
+   * 4. The stack ensures proper nesting without recursion
+   * 
+   * Element Categories:
+   * - Atomic (cannot contain other formatting):
+   *   - Images: ![alt](src)
+   *   - Links: [text](href) 
+   *   - Inline code: `code`
+   * 
+   * - Styled (can be nested and contain other elements):
+   *   - BoldItalic: ***text*** or ___text___ (highest precedence)
+   *   - Bold: **text** or __text__
+   *   - Italic: *text* or _text_
+   *   - Strikethrough: ~~text~~
+   *   - Highlight: ==text==
+   *   - Subscript: ~text~
+   *   - Superscript: ^text^
+   * 
+   * Precedence Rules:
+   * - Atomic elements always take precedence over styled elements
+   * - Longer markers take precedence over shorter ones (*** before **)
+   * - Earlier positions in text take precedence for same-length markers
+   * 
+   * @param {string} text - Raw inline markdown text to parse. Can contain
+   *   any combination of supported inline syntax.
+   * 
+   * @returns {Array} Array of inline token objects. Each token has:
+   *   - type: Element type (text, bold, italic, link, image, etc.)
+   *   - content: Either string content or array of nested tokens
+   *   - Additional properties for specific types (href, src, alt, etc.)
+   * 
+   * @example
+   * tokenizeInline("**Bold *italic* text** with [link](url)")
+   * // Returns complex nested structure representing the formatting hierarchy
    */
   function tokenizeInline(text) {
     const inlineTokens = [];
@@ -185,28 +269,51 @@ function tokenizeUserInput(input) {
   }
 
   /**
-   * Tokenizes blockquote lines into tokens by stripping leading '>' characters,
-   * then parsing their content via the main tokenizer helper without recursion.
-   * This breaks recursion cycles and handles blockquotes properly.
-   *
-   * @param {Array<string>} blockquoteLines - Lines starting with '>'.
-   * @returns {Array} tokens - Parsed tokens inside the blockquote.
+   * Processes blockquote content by cleaning markers and delegating to iterative parser.
+   * 
+   * This function handles the common blockquote pattern where lines begin with '>'.
+   * It performs the necessary cleanup and delegates to the iterative parser to
+   * avoid recursion while still supporting nested markdown within blockquotes.
+   * 
+   * Process:
+   * 1. Remove '> ' prefix from each line
+   * 2. Rejoin lines to reform multiline content
+   * 3. Parse the cleaned content using iterative algorithm
+   * 
+   * @param {Array<string>} blockquoteLines - Array of lines that start with '>'
+   *   marker. May include empty lines and lines with various content.
+   * 
+   * @returns {Array} Array of parsed token objects representing the blockquote
+   *   content. Can include any block elements (headings, paragraphs, lists, etc.)
+   * 
+   * @example
+   * const lines = ['> # Header', '> Some text', '> - List item'];
+   * tokenizeBlockquoteLines(lines);
+   * // Returns tokens for header, paragraph, and list within blockquote
    */
   function tokenizeBlockquoteLines(blockquoteLines) {
-    // Remove leading blockquote marker '> ' from each line and join back
+    // Strip the blockquote marker '> ' from each line (with optional space)
     const blockquoteContent = blockquoteLines
       .map((line) => line.replace(/^>\s?/, ""))
       .join("\n");
-    // Tokenize blockquote content with the iterative helper (no recursion)
+    // Process the cleaned content using the iterative helper to avoid recursion
     return tokenizeUserInputIterative(blockquoteContent);
   }
 
   /**
-   * Iterative helper to tokenize multiline input, like blockquote content,
-   * avoiding recursion by copying main block parsing logic.
-   *
-   * Supports the same block types (headings, lists, paragraphs, hr, blockquotes)
-   * but parses blockquotes inline without recursive calls.
+   * Iterative parser for multiline markdown content without recursion.
+   * 
+   * This function duplicates the main block parsing logic but avoids recursion
+   * to prevent stack overflow when parsing nested blockquotes or complex content.
+   * It's specifically designed for parsing content within blockquotes.
+   * 
+   * Supported block elements:
+   * - Headers (# ## ### etc.)
+   * - Ordered and unordered lists
+   * - Task lists with checkboxes
+   * - Horizontal rules
+   * - Paragraphs
+   * - Nested blockquotes (rendered as paragraphs to avoid recursion)
    *
    * @param {string} multilineInput - Multiline string inside blockquote.
    * @returns {Array} tokens - Parsed tokens.
@@ -296,7 +403,20 @@ function tokenizeUserInput(input) {
   }
 
   // ----------------------- MAIN BLOCK PARSING LOOP -------------------------
-  // Iterate through each line of input to detect block elements and parse them
+  // This is the core parsing loop that processes markdown line by line to identify
+  // and parse block-level elements. The order of checks is important for proper
+  // precedence (e.g., code blocks before lists, task lists before regular lists).
+  //
+  // Processing Order (by precedence):
+  // 1. Fenced code blocks (``` blocks)
+  // 2. Horizontal rules (--- *** ___)
+  // 3. Blockquotes (> text)
+  // 4. Task lists (- [ ] and - [x])
+  // 5. Ordered lists (1. 2. 3.)
+  // 6. Unordered lists (- *)
+  // 7. Headers (# ## ###)
+  // 8. Tables (| col | col |)
+  // 9. Paragraphs (fallback)
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const trimmed = line.trim();
