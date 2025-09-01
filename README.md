@@ -5,7 +5,7 @@ A light, pure JavaScript markdown parser that transforms your markdown into clea
 ## Features
 
 ### Core Functionality
-- **Pure JavaScript**: Just Cattown and its trusty sidekick DOMPurify—no bulky dependencies here.
+- **Pure JavaScript + CSS**: Just Cattown and its trusty sidekick DOMPurify—no bulky dependencies here.
 - **HTML Sanitization**: Built-in XSS protection with configurable settings to keep your content safe.
 - **Performance Optimized**: Fast iterative tokenization and intelligent DOM diffing to update only what needs updating.
 - **Versatile Output Methods**: 
