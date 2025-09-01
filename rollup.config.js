@@ -38,7 +38,7 @@ export default defineConfig({
     postcss({
       extract: "markdownStyles.css", // Extract CSS to separate file
       minimize: true, // Minify CSS
-      sourceMap: true, // Generate CSS source maps
+      sourceMap: false, // Generate CSS without source maps
     }),
     terser(), // Minify the final JavaScript bundle
   ],

@@ -37,7 +37,7 @@ export default defineConfig({
       }
     },
     minify: 'esbuild',                          // Fast minification with esbuild
-    sourcemap: true,                            // Generate source maps
+    sourcemap: false,                            // Dont generate source maps
     cssCodeSplit: false,                        // Keep CSS in single file
     assetsInlineLimit: 0                        // Don't inline any assets
   },

@@ -170,10 +170,11 @@ import { returnHTML } from 'cattown';
 
 ## Browser Support
 
-- Chrome 61+
-- Firefox 60+
-- Safari 10.1+
-- Edge 16+
+- Chrome 64+
+- Firefox 67+
+- Safari 12+
+- Edge 67+
+- Opera 51+
 - Not Internet Exploder (seriously, why?)
 
 ## Security
