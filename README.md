@@ -135,7 +135,7 @@ setSettings("IconInCode", false);
 ## CSS Customization
 
 Feel free to unleash your inner artist—style away with vanilla CSS, Sass or any other way you like. With `.ct-parsed` and element-specific classes.
-To see all element-specific classes please see our [documentation](example.com).
+To see all element-specific classes please see [CSS guide](CSSGuide.md).
 
 ### Using Default Styles
 

@@ -83,6 +83,7 @@ function convertTokensToHTML(tokens) {
    *   based on configuration. Nested tokens are processed recursively.
    *
    * @example
+   * // representation inside megatype
    * const tokens = [
    *   { type: 'text', content: 'Hello ' },
    *   { type: 'bold', content: [{ type: 'text', content: 'world' }] },

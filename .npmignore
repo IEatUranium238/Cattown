@@ -19,6 +19,9 @@ node_modules/
 coverage/
 *.log
 
+# Github assets
+CSSGuide.md
+
 # npm pack result
 *.tgz
 

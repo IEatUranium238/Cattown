@@ -85,7 +85,7 @@ ___
 - `.codeblock-pre` is the container that controls background, padding, scrolling, and border radius.  
 - `.codeblock-code` is the actual code font and color.  
 - `.codeblock-lang-label` is the text and the container for the icon.  
-- `.codeblock-image` is the language icon itself.  
+- `.codeblock-image` is the language icon itself, image itself if provided via Devicon.  
 - You need to enable the `LanguageNameInCode` setting for the language name to be shown; to see the icon enable the `IconInCode` setting alongside the setting for text.  
 ___  
 ## Tables  
