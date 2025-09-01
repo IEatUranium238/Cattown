@@ -1,11 +1,11 @@
 /**
  * CATTOWN MARKDOWN TOKENIZER
- * 
+ *
  * This module implements the first stage of markdown parsing: tokenization.
  * It converts raw markdown text into a structured array of token objects
  * representing both block-level elements (headers, paragraphs, lists) and
  * inline formatting (bold, italic, links, images).
- * 
+ *
  * Key Features:
  * - Iterative parsing algorithm (no recursion) for better performance
  * - Comprehensive markdown syntax support
@@ -14,13 +14,13 @@
  * - Blockquote support with nested content
  * - Table parsing with header detection
  * - Task list support with checkbox states
- * 
+ *
  * Algorithm Overview:
  * 1. Split input into lines for block-level parsing
  * 2. Process each line to identify block elements
  * 3. For each block, parse inline content iteratively
  * 4. Handle special cases like code blocks, tables, lists
- * 
+ *
  * The tokenizer produces a hierarchical structure where:
  * - Block tokens have 'megaType' property (heading, paragraph, list, etc.)
  * - Inline tokens have 'type' property (text, bold, italic, link, etc.)
@@ -29,11 +29,11 @@
 
 /**
  * Converts raw markdown text into structured token objects.
- * 
+ *
  * This is the main entry point for the tokenization process. It analyzes
  * markdown syntax and produces an abstract syntax tree of tokens that
  * can be converted to HTML by the tokensToHTML module.
- * 
+ *
  * The function handles the complete markdown specification including:
  * - Headers (# ## ### #### ##### ######)
  * - Paragraphs and line breaks
@@ -46,16 +46,16 @@
  * - Horizontal rules (--- *** ___)
  * - Strikethrough (~~text~~), highlight (==text==)
  * - Subscript (~text~) and superscript (^text^)
- * 
+ *
  * @param {string} input - Raw markdown text to parse. Can contain any
  *   valid markdown syntax including multi-line content.
- * 
+ *
  * @returns {Array} Array of token objects representing the parsed structure.
  *   Each token has either:
  *   - megaType: for block elements (heading, paragraph, list, table, etc.)
  *   - type: for inline elements (text, bold, italic, link, etc.)
  *   Plus additional properties for content, attributes, and metadata.
- * 
+ *
  * @example
  * const tokens = tokenizeUserInput("# Hello\n**Bold** text");
  * // Returns: [
@@ -69,24 +69,24 @@ function tokenizeUserInput(input) {
 
   /**
    * Parses inline markdown elements using an iterative stack-based algorithm.
-   * 
+   *
    * This is one of the most complex functions in Cattown. It handles nested
    * inline formatting while properly managing precedence and avoiding infinite
    * recursion. The algorithm uses a processing stack to handle nested elements
    * like bold text containing italic text containing links.
-   * 
+   *
    * Processing Strategy:
    * 1. Atomic elements (images, links, code) are parsed first and cannot be nested
    * 2. Styled elements (bold, italic) are parsed by precedence (longest markers first)
    * 3. Nested content is processed by pushing new frames onto the processing stack
    * 4. The stack ensures proper nesting without recursion
-   * 
+   *
    * Element Categories:
    * - Atomic (cannot contain other formatting):
    *   - Images: ![alt](src)
-   *   - Links: [text](href) 
+   *   - Links: [text](href)
    *   - Inline code: `code`
-   * 
+   *
    * - Styled (can be nested and contain other elements):
    *   - BoldItalic: ***text*** or ___text___ (highest precedence)
    *   - Bold: **text** or __text__
@@ -95,20 +95,20 @@ function tokenizeUserInput(input) {
    *   - Highlight: ==text==
    *   - Subscript: ~text~
    *   - Superscript: ^text^
-   * 
+   *
    * Precedence Rules:
    * - Atomic elements always take precedence over styled elements
    * - Longer markers take precedence over shorter ones (*** before **)
    * - Earlier positions in text take precedence for same-length markers
-   * 
+   *
    * @param {string} text - Raw inline markdown text to parse. Can contain
    *   any combination of supported inline syntax.
-   * 
+   *
    * @returns {Array} Array of inline token objects. Each token has:
    *   - type: Element type (text, bold, italic, link, image, etc.)
    *   - content: Either string content or array of nested tokens
    *   - Additional properties for specific types (href, src, alt, etc.)
-   * 
+   *
    * @example
    * tokenizeInline("**Bold *italic* text** with [link](url)")
    * // Returns complex nested structure representing the formatting hierarchy
@@ -269,23 +269,109 @@ function tokenizeUserInput(input) {
   }
 
   /**
+   * Parse consecutive list lines (ordered or unordered) including nested via indentation.
+   *
+   * @param {string[]} lines - Array of lines in input
+   * @param {number} startIndex - Line to start parsing from
+   * @param {boolean} ordered - whether we're parsing ordered list (true) or unordered (false)
+   * @returns {Object} - { listToken, endIndex }
+   */
+  function parseNestedList(lines, startIndex, ordered) {
+    const listToken = {
+      megaType: ordered ? "olist" : "list",
+      items: [],
+    };
+
+    // Stack to keep track of current list and indentation level
+    // Each element: { indent, token } where token is a list token (olist/list)
+    const stack = [];
+
+    // Helper to determine indentation (count spaces before marker)
+    const getIndent = (line) => {
+      const match = line.match(/^(\s*)/);
+      return match ? match[1].length : 0;
+    };
+
+    // Regex to parse list item line and get content
+    const itemRegex = ordered
+      ? /^(\s*)(\d+)\.\s+(.*)$/
+      : /^(\s*)([-*+])\s+(.*)$/;
+
+    let i = startIndex;
+
+    while (i < lines.length) {
+      const line = lines[i];
+      if (!line.trim()) {
+        // blank line ends list block
+        break;
+      }
+
+      const m = line.match(itemRegex);
+      if (!m) {
+        break; // not a list item line
+      }
+
+      const indent = m[1].length;
+      const content = m[3];
+
+      // Create list item token with inline content
+      const newItem = { content: tokenizeInline(content), items: [] };
+
+      // Find position in stack for current indent
+      while (stack.length > 0 && indent <= stack[stack.length - 1].indent) {
+        stack.pop();
+      }
+
+      if (stack.length === 0) {
+        // Top level item
+        listToken.items.push(newItem);
+        stack.push({ indent, token: newItem });
+      } else {
+        // Nested list item
+        const parentItem = stack[stack.length - 1].token;
+        if (!parentItem.items) {
+          parentItem.items = [];
+        }
+        parentItem.items.push(newItem);
+        stack.push({ indent, token: newItem });
+      }
+
+      i++;
+    }
+
+    // Clean up items without nested items property for simplicity
+    function cleanItems(items) {
+      for (const item of items) {
+        if (item.items && item.items.length === 0) {
+          delete item.items;
+        } else if (item.items) {
+          cleanItems(item.items);
+        }
+      }
+    }
+    cleanItems(listToken.items);
+
+    return { listToken, endIndex: i - 1 };
+  }
+
+  /**
    * Processes blockquote content by cleaning markers and delegating to iterative parser.
-   * 
+   *
    * This function handles the common blockquote pattern where lines begin with '>'.
    * It performs the necessary cleanup and delegates to the iterative parser to
    * avoid recursion while still supporting nested markdown within blockquotes.
-   * 
+   *
    * Process:
    * 1. Remove '> ' prefix from each line
    * 2. Rejoin lines to reform multiline content
    * 3. Parse the cleaned content using iterative algorithm
-   * 
+   *
    * @param {Array<string>} blockquoteLines - Array of lines that start with '>'
    *   marker. May include empty lines and lines with various content.
-   * 
+   *
    * @returns {Array} Array of parsed token objects representing the blockquote
    *   content. Can include any block elements (headings, paragraphs, lists, etc.)
-   * 
+   *
    * @example
    * const lines = ['> # Header', '> Some text', '> - List item'];
    * tokenizeBlockquoteLines(lines);
@@ -302,11 +388,11 @@ function tokenizeUserInput(input) {
 
   /**
    * Iterative parser for multiline markdown content without recursion.
-   * 
+   *
    * This function duplicates the main block parsing logic but avoids recursion
    * to prevent stack overflow when parsing nested blockquotes or complex content.
    * It's specifically designed for parsing content within blockquotes.
-   * 
+   *
    * Supported block elements:
    * - Headers (# ## ### etc.)
    * - Ordered and unordered lists
@@ -498,33 +584,17 @@ function tokenizeUserInput(input) {
 
     // Ordered list items: lines starting with number + '.'
     if (/^\d+\.\s+/.test(trimmed)) {
-      const items = [];
-      let j = i;
-      while (j < lines.length) {
-        const l = lines[j].trim();
-        const m = l.match(/^(\d+)\.\s+(.*)$/);
-        if (!m) break;
-        items.push(tokenizeInline(m[2]));
-        j++;
-      }
-      tokens.push({ megaType: "olist", items });
-      i = j - 1;
+      const { listToken, endIndex } = parseNestedList(lines, i, true);
+      tokens.push(listToken);
+      i = endIndex;
       continue;
     }
 
-    // Unordered list items: lines starting with '-' or '*'
-    if (/^[-*]\s+/.test(trimmed)) {
-      const items = [];
-      let j = i;
-      while (j < lines.length) {
-        const l = lines[j].trim();
-        const m = l.match(/^([-*])\s+(.*)$/);
-        if (!m) break;
-        items.push(tokenizeInline(m[2]));
-        j++;
-      }
-      tokens.push({ megaType: "list", items });
-      i = j - 1;
+    // Unordered list
+    if (/^[-*+]\s+/.test(trimmed)) {
+      const { listToken, endIndex } = parseNestedList(lines, i, false);
+      tokens.push(listToken);
+      i = endIndex;
       continue;
     }
 

@@ -181,6 +181,27 @@
   margin-bottom: 0.3em;
 }
 
+/* Used for nested list numbering */
+
+.ct-parsed.olist {
+  counter-reset: item;
+  list-style: none;
+  padding-left: 1.5em;
+}
+
+.ct-parsed.olist > li {
+  counter-increment: item;
+}
+
+.ct-parsed.olist > li::before {
+  content: counters(item, ".") " ";
+}
+
+.ct-parsed.nested-list {
+  margin: 0;
+}
+
+
 /* ===========================
    Horizontal Rule Styles
    ============================ */
@@ -261,6 +282,9 @@
 }
 .ct-parsed.table-row:nth-child(even) {
   background-color: var(--color-bg-table-row-even);
+}
+.ct-parsed.table-row:nth-child(odd) {
+  background-color: var(--color-bg-table);
 }
 
 /* Table cells */

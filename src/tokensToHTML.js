@@ -1,11 +1,11 @@
 /**
  * CATTOWN TOKENS-TO-HTML CONVERTER
- * 
+ *
  * This module converts the structured token objects produced by the tokenizer
  * into clean, semantic HTML. It handles both block-level elements (paragraphs,
  * headings, lists, tables, code blocks) and inline elements (bold, italic,
  * links, images, etc.).
- * 
+ *
  * Features:
  * - Comprehensive HTML generation for all markdown elements
  * - Configurable CSS class application for custom styling
@@ -13,7 +13,7 @@
  * - Language icon support for code blocks
  * - Responsive table containers
  * - Semantic HTML structure
- * 
+ *
  * The converter respects configuration settings to control:
  * - Whether custom CSS classes are applied
  * - Code block language display options
@@ -24,25 +24,25 @@ import getSettings from "./cattownConfig";
 
 /**
  * Converts structured markdown tokens into clean, semantic HTML.
- * 
+ *
  * This is the second stage of the markdown conversion pipeline (after tokenization).
  * It transforms the abstract syntax tree of tokens into actual HTML elements,
  * applying appropriate tags, attributes, and CSS classes based on configuration.
- * 
+ *
  * The function handles:
  * - Block elements: headers, paragraphs, lists, tables, code blocks, blockquotes
  * - Inline elements: bold, italic, links, images, code spans, strikethrough
  * - Security: HTML escaping to prevent injection attacks
  * - Styling: Configurable CSS class application
  * - Accessibility: Semantic HTML structure and proper attributes
- * 
+ *
  * @param {Array} tokens - Array of parsed token objects from the tokenizer.
  *   Each token has a 'megaType' (for blocks) or 'type' (for inline) property
  *   and associated content/configuration properties.
- * 
+ *
  * @returns {string} Complete HTML string ready for insertion into DOM or
  *   sanitization. Returns empty string for invalid input.
- * 
+ *
  * @example
  * const tokens = [
  *   { megaType: 'heading', level: 1, content: [...] },
@@ -59,11 +59,11 @@ function convertTokensToHTML(tokens) {
 
   /**
    * Converts inline markdown tokens into HTML strings with proper escaping.
-   * 
+   *
    * This recursive function handles all inline markdown elements like bold,
    * italic, links, images, and code spans. It properly escapes content to
    * prevent HTML injection while preserving the intended formatting.
-   * 
+   *
    * Supported inline elements:
    * - text: Plain text (HTML escaped)
    * - bold/italic/boldItalic: Text formatting elements
@@ -73,15 +73,15 @@ function convertTokensToHTML(tokens) {
    * - image: Images with alt text and proper attributes
    * - code: Inline code spans
    * - highlight: Highlighted/marked text
-   * 
+   *
    * @param {Array} inlineTokens - Array of inline token objects, each with:
    *   - type: The kind of inline element (text, bold, link, etc.)
    *   - content: Either string content or array of nested tokens
    *   - Additional properties for specific types (href for links, src/alt for images)
-   * 
+   *
    * @returns {string} HTML string with proper escaping and CSS classes applied
    *   based on configuration. Nested tokens are processed recursively.
-   * 
+   *
    * @example
    * const tokens = [
    *   { type: 'text', content: 'Hello ' },
@@ -195,25 +195,25 @@ function convertTokensToHTML(tokens) {
 
   /**
    * Escapes HTML special characters to prevent XSS injection attacks.
-   * 
+   *
    * This security function converts potentially dangerous characters into
    * their HTML entity equivalents, making them safe for display in HTML
    * content without being interpreted as markup.
-   * 
+   *
    * Characters escaped:
    * - & → &amp; (ampersand - must be first to avoid double-escaping)
    * - < → &lt; (less than - prevents opening tags)
    * - > → &gt; (greater than - prevents closing tags)
    * - " → &quot; (double quote - prevents attribute breaking)
    * - ' → &#39; (single quote - prevents attribute breaking)
-   * 
+   *
    * @param {string} str - The potentially unsafe string to escape
    * @returns {string} HTML-safe string with special characters escaped
-   * 
+   *
    * @example
    * escapeHTML('<script>alert("xss")</script>');
    * // Returns: '&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;'
-   * 
+   *
    * escapeHTML('User input: "Hello & goodbye"');
    * // Returns: 'User input: &quot;Hello &amp; goodbye&quot;'
    */
@@ -237,20 +237,50 @@ function convertTokensToHTML(tokens) {
   }
 
   /**
+   * Render list items, supporting nested sublists.
+   *
+   * @param {Array} items - List items (each with `content` and optional nested `items`)
+   * @param {boolean} ordered - True if ordered list (<ol>), false if unordered (<ul>)
+   * @returns {string} HTML string for nested list
+   */
+  function renderListItems(items, ordered) {
+    return items
+      .map((item) => {
+        const inlineHTML = inlineTokensToHTML(item.content);
+
+        let nestedListHTML = "";
+        if (item.items && item.items.length > 0) {
+          nestedListHTML = ordered
+            ? `<ol${
+                applyCustomStyle ? ` class="ct-parsed olist nested-list"` : ""
+              }>\n${renderListItems(item.items, true)}\n</ol>`
+            : `<ul${
+                applyCustomStyle ? ` class="ct-parsed list nested-list"` : ""
+              }>\n${renderListItems(item.items, false)}\n</ul>`;
+        }
+
+        return `<li${
+          applyCustomStyle ? ` class="ct-parsed list-item"` : ""
+        }>${inlineHTML}${nestedListHTML}</li>`;
+      })
+      .join("\n");
+  }
+
+  /**
    * Escapes quote characters specifically for use in HTML attribute values.
-   * 
+   *
    * This function is specialized for cleaning up strings that will be used
    * as HTML attribute values (like href, src, alt). It focuses on quote
    * characters that could break out of attribute value boundaries.
-   * 
+   *
    * @param {string} str - The attribute value string to escape
    * @returns {string} String safe for use in HTML attribute values
-   * 
+   *
    * @example
    * const url = 'https://example.com/search?q="test"';
    * const html = `<a href="${escapeAttribute(url)}">Link</a>`;
    * // Safe: <a href="https://example.com/search?q=&quot;test&quot;">Link</a>
-   * 
+   *
    * const altText = "Image of user's profile";
    * const img = `<img alt="${escapeAttribute(altText)}" />`;
    * // Safe: <img alt="Image of user&#39;s profile" />
@@ -309,27 +339,13 @@ function convertTokensToHTML(tokens) {
           // Unordered list: Render each item inline tokens inside <li>
           return `<ul${
             applyCustomStyle ? ` class="ct-parsed list"` : ""
-          }>\n${token.items
-            .map(
-              (item) =>
-                `<li${
-                  applyCustomStyle ? ` class="ct-parsed list-item"` : ""
-                }>${inlineTokensToHTML(item)}</li>`
-            )
-            .join("\n")}\n</ul>`;
+          }>\n${renderListItems(token.items, false)}\n</ul>`;
 
         case "olist":
           // Ordered list: similar to unordered list but using <ol> as main tag
           return `<ol${
             applyCustomStyle ? ` class="ct-parsed olist"` : ""
-          }>\n${token.items
-            .map(
-              (item) =>
-                `<li${
-                  applyCustomStyle ? ` class="ct-parsed olist-item"` : ""
-                }>${inlineTokensToHTML(item)}</li>`
-            )
-            .join("\n")}\n</ol>`;
+          }>\n${renderListItems(token.items, true)}\n</ol>`;
 
         case "hr":
           // Horizontal rule

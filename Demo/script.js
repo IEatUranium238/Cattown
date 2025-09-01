@@ -2,7 +2,7 @@ import { setSettings } from "../src/cattownConfig.js";
 import returnHTML, { appendIntoElement, insertIntoElement, replaceIntoElement } from "../src/cattownMain.js";
 import { setDOMPurify } from "../src/cattownMain.js";
 import DOMpurify from 'dompurify';
-setDOMPurify("BABA")
+setDOMPurify(DOMpurify)
 
 setSettings("debugMode", true);
 
