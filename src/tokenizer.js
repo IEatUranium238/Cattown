@@ -278,7 +278,8 @@ function tokenizeUserInput(input) {
    */
   function parseNestedList(lines, startIndex, ordered) {
     const listToken = {
-      megaType: ordered ? "olist" : "list",
+      megaType: "list",
+      ordered: ordered,
       items: [],
     };
 
@@ -420,7 +421,7 @@ function tokenizeUserInput(input) {
 
       // Horizontal rule (3 or more repeated *, -, or _)
       if (/^([*\-_])\1{2,}$/.test(trimmed)) {
-        innerTokens.push({ megaType: "hr" });
+        innerTokens.push({ megaType: "horizontalRule" });
         idx++;
         continue;
       }
@@ -525,16 +526,16 @@ function tokenizeUserInput(input) {
       i = j - 1; // adjust loop index
       const codeContent = codeLines.join("\n");
       tokens.push({
-        megaType: "codeblock",
-        language,
+        megaType: "codeBlock",
         content: codeContent,
+        language: language || "",
       });
       continue;
     }
 
     // Detect horizontal rule - line with 3 or more same characters *, -, or _
     if (/^([*\-_])\1{2,}$/.test(trimmed)) {
-      tokens.push({ megaType: "hr" });
+      tokens.push({ megaType: "horizontalRule" });
       continue;
     }
 
@@ -577,7 +578,7 @@ function tokenizeUserInput(input) {
         j++;
       }
 
-      tokens.push({ megaType: "tasklist", items });
+      tokens.push({ megaType: "list", items });
       i = j - 1;
       continue;
     }
@@ -615,6 +616,7 @@ function tokenizeUserInput(input) {
       // Peek next line for separator
       const nextLine = i + 1 < lines.length ? lines[i + 1].trim() : "";
       if (/^\|?(\s*:?-+:?\s*\|)+\s*:?-+:?\s*\|?$/.test(nextLine)) {
+        // Table with header
         const tableHeaderCells = trimmed
           .split("|")
           .map((s) => s.trim())
@@ -641,6 +643,31 @@ function tokenizeUserInput(input) {
         tokens.push({ megaType: "table", header, rows });
         i--;
         continue;
+      } else {
+        // Table without header - check if next line also has pipes
+        const nextLine = i + 1 < lines.length ? lines[i + 1].trim() : "";
+        if (nextLine && /\|/.test(nextLine)) {
+          const tableRows = [];
+          let j = i;
+          while (j < lines.length) {
+            const rowLine = lines[j].trim();
+            if (!rowLine || !rowLine.includes("|")) break; // End of table
+            // split row cells
+            const rowCells = rowLine
+              .split("|")
+              .map((s) => s.trim())
+              .filter((s) => s.length > 0);
+            tableRows.push(rowCells);
+            j++;
+          }
+          // tokenize each row cell inline
+          const rows = tableRows.map((row) =>
+            row.map((cell) => tokenizeInline(cell))
+          );
+          tokens.push({ megaType: "table", header: [], rows });
+          i = j - 1;
+          continue;
+        }
       }
     }
 

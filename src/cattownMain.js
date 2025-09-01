@@ -45,16 +45,10 @@ let DOMPurify = null;
  * setDOMPurify(DOMPurify);
  */
 export function setDOMPurify(instance) {
-  try {
-    if (typeof(instance) !== "function"){
-      throw new Error("Type of instance is not function, got "+typeof(instance))
-    }
-    DOMPurify = instance;
-  } catch (e) {
-    console.error(`Cattown - Failed to set DOMPurify instance! Got error:`);
-    console.error(e);
+  if (!instance || typeof instance.sanitize !== "function") {
+    throw new Error("Type of instance is not function");
   }
-  
+  DOMPurify = instance;
 }
 
 // Checks if DOMPurify if set up, if no then throws an warning.
@@ -161,12 +155,20 @@ export function returnHTML(markdown) {
 
     // Step 3: Sanitize HTML if enabled and DOMPurify is available
     if (useSanitization && DOMPurify) {
-      const cleanHTML = DOMPurify.sanitize(dirtyHTML);
-      debugLog("Cattown - sanitized HTML code: \n", cleanHTML);
-      let endTime = Date.now();
-      let elapsedTime = endTime - startTime;
-      debugLog("Cattown - done! Time took: " + elapsedTime + "ms");
-      return cleanHTML;
+      try {
+        const cleanHTML = DOMPurify.sanitize(dirtyHTML);
+        debugLog("Cattown - sanitized HTML code: \n", cleanHTML);
+        let endTime = Date.now();
+        let elapsedTime = endTime - startTime;
+        debugLog("Cattown - done! Time took: " + elapsedTime + "ms");
+        return cleanHTML;
+      } catch (sanitizeError) {
+        debugLog("Cattown - DOMPurify sanitization failed, returning unsanitized HTML: ", sanitizeError);
+        let endTime = Date.now();
+        let elapsedTime = endTime - startTime;
+        debugLog("Cattown - done! Time took: " + elapsedTime + "ms");
+        return dirtyHTML;
+      }
     } else {
       // Log warning if sanitization was requested but DOMPurify not available
       if (useSanitization && !DOMPurify) {
@@ -207,6 +209,11 @@ export function returnHTML(markdown) {
  * insertIntoElement(markdownFromAPI, section);
  */
 export function insertIntoElement(markdown, element) {
+  // Validate element parameter
+  if (!element || typeof element.innerHTML === 'undefined') {
+    throw new Error('Invalid element provided to insertIntoElement');
+  }
+
   try {
     // Update debug status and start performance timing
     checkDebug();
@@ -225,9 +232,14 @@ export function insertIntoElement(markdown, element) {
 
     // Step 3: Sanitize and insert HTML into the target element
     if (useSanitization && DOMPurify) {
-      const cleanHTML = DOMPurify.sanitize(dirtyHTML);
-      debugLog("Cattown - sanitized HTML code: \n", cleanHTML);
-      element.innerHTML = cleanHTML;
+      try {
+        const cleanHTML = DOMPurify.sanitize(dirtyHTML);
+        debugLog("Cattown - sanitized HTML code: \n", cleanHTML);
+        element.innerHTML = cleanHTML;
+      } catch (sanitizeError) {
+        debugLog("Cattown - DOMPurify sanitization failed, using unsanitized HTML: ", sanitizeError);
+        element.innerHTML = dirtyHTML;
+      }
     } else {
       if (useSanitization && !DOMPurify) {
         debugLog(
