@@ -1,7 +1,7 @@
-// Basic usage example for Cattown
+// Basic usage example for Cattown in Node.js like environment
 import { returnHTML, insertIntoElement, setSettings, setDOMPurify } from 'cattown';
 
-// Example 1: Basic markdown to HTML conversion
+// Example : Basic markdown to HTML conversion
 const markdown = `
 # Welcome to Cattown!
 
@@ -24,27 +24,13 @@ function greet(name) {
 `;
 
 // Convert markdown to HTML
-const html = returnHTML(markdown);
+let html = returnHTML(markdown);
 console.log('Generated HTML:', html);
 
-// Example 2: DOM manipulation (browser only)
-if (typeof document !== 'undefined') {
-    const element = document.getElementById('content');
-    if (element) {
-        insertIntoElement(markdown, element);
-    }
-}
-
-// Example 3: Configuration
+// Example : Configurated
 setSettings('debugMode', true);
 setSettings('enableSanitization', true);
 setSettings('useCustomTheme', true);
 
-// Example 4: Setting up DOMPurify (browser only)
-if (typeof window !== 'undefined') {
-    // In a real application, you would import DOMPurify
-    // import DOMPurify from 'dompurify';
-    // setDOMPurify(DOMPurify);
-    
-    console.log('DOMPurify setup would go here in browser environment');
-}
+html = returnHTML(markdown);
+console.log('Generated HTML:', html);

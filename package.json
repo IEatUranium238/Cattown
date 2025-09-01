@@ -55,6 +55,7 @@
     "node": ">=14.0.0"
   },
   "dependencies": {
+    "cattown": "file:cattown-1.0.0.tgz",
     "dompurify": "^3.2.6"
   },
   "devDependencies": {

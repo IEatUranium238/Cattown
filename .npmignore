@@ -19,6 +19,9 @@ node_modules/
 coverage/
 *.log
 
+# npm pack result
+*.tgz
+
 # IDE files
 .vscode/
 .idea/
