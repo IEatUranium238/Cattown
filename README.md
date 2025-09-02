@@ -1,3 +1,4 @@
+![](cattownLogo.png)
 # Cattown
 
 A light, pure JavaScript markdown parser that transforms your markdown into clean, safe HTML with HTML sanitization powered by DOMPurify. Cattown is your purr-fect for quick, customizable markdown rendering.
