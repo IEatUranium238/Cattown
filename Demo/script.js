@@ -1,6 +1,6 @@
-import { setSettings } from "../src/cattownConfig.js";
-import returnHTML, { appendIntoElement, insertIntoElement, replaceIntoElement } from "../src/cattownMain.js";
-import { setDOMPurify } from "../src/cattownMain.js";
+import { setSettings } from "cattown";
+import returnHTML, { appendIntoElement, insertIntoElement, replaceIntoElement } from "cattown";
+import { setDOMPurify } from "cattown";
 import DOMpurify from 'dompurify';
 setDOMPurify(DOMpurify)
 

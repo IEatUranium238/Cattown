@@ -279,21 +279,6 @@ describe('Cattown Tokens to HTML Module', () => {
       expect(html).toContain('display:none');
     });
 
-    test('should include fallback icon when only icon is enabled (no language name)', () => {
-      setSettings('IconInCode', true);
-      setSettings('LanguageNameInCode', false);
-      
-      const tokens = [{
-        megaType: 'codeBlock',
-        language: 'javascript',
-        content: 'console.log("test");'
-      }];
-      
-      const html = convertTokensToHTML(tokens);
-      expect(html).toContain('💻');
-      expect(html).toContain('onerror');
-      expect(html).toContain('display:none');
-    });
   });
 
   describe('Table Conversion', () => {

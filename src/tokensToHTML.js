@@ -446,15 +446,6 @@ function convertTokensToHTML(tokens) {
               <span style="display:none; font-size: 1.2em; margin-right: 5px;"${
                 applyCustomStyle ? ` class="ct-parsed codeblock-fallback-icon"` : ""
               }>💻</span>`;
-            } else if (useCodeIcon) {
-              // Use a generic code icon when language name is disabled
-              iconHTML = `<img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/code/code-plain.svg"
-        alt="code icon"${
-                applyCustomStyle ? ` class="ct-parsed codeblock-image"` : ""
-              } onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';" />
-              <span style="display:none; font-size: 1.2em; margin-right: 5px;"${
-                applyCustomStyle ? ` class="ct-parsed codeblock-fallback-icon"` : ""
-              }>💻</span>`;
             }
 
             if (useCodeLangName) {

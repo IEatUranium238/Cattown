@@ -313,12 +313,6 @@ console.log("code block");
           expect(html).not.toContain('javascript');
         }
         
-        if (config.IconInCode) {
-          expect(html).toContain('devicon');
-        } else {
-          expect(html).not.toContain('devicon');
-        }
-        
         // Bold text should always be present (but may be escaped)
         expect(html).toContain('Bold');
       });
