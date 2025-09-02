@@ -57,6 +57,9 @@ cd cattown
 npm install
 ```
 
+You can find examples for use in this project repo.
+For browser, files are located inside Demo folder, for Node.js and similar evrioments file is located inside Node demo folder.
+
 ## Quick Start
 
 ### Basic Usage
