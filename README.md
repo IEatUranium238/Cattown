@@ -1,5 +1,8 @@
 ![](cattownLogo.png)
 # Cattown
+[![NPM](https://nodei.co/npm/cattown.svg?style=shields&data=v)](https://nodei.co/npm/cattown/) [![NPM](https://nodei.co/npm/cattown.svg?style=shields&data=n)](https://nodei.co/npm/cattown/) [![NPM](https://nodei.co/npm/cattown.svg?style=shields&data=u)](https://nodei.co/npm/cattown/)
+
+[![NPM](https://nodei.co/npm/cattown.svg?data=n)](https://nodei.co/npm/cattown/)
 
 A light, pure JavaScript markdown parser that transforms your markdown into clean, safe HTML with HTML sanitization powered by DOMPurify. Cattown is your purr-fect for quick, customizable markdown rendering.
 
