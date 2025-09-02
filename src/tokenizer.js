@@ -117,6 +117,45 @@ function tokenizeUserInput(input) {
     const inlineTokens = [];
     if (!text) return inlineTokens;
 
+    const ESCAPE_CHAR = "\0"; // null char as unique safe placeholder
+    const escapedChars = [];
+
+    let processedText = "";
+    for (let i = 0; i < text.length; i++) {
+      if (text[i] === "\\") {
+        // Next char escaped
+        if (i + 1 < text.length) {
+          escapedChars.push(text[i + 1]);
+          processedText += ESCAPE_CHAR; // One placeholder per escaped char
+          i++; // skip next char because escaped
+        } else {
+          // Trailing backslash, keep as is
+          processedText += "\\";
+        }
+      } else {
+        processedText += text[i];
+      }
+    }
+
+    // Helper function: given a text segment possibly containing ESCAPE_CHAR(s)
+    function splitEscapesToTokens(s) {
+      const result = [];
+      for (let i = 0; i < s.length; i++) {
+        if (s[i] === ESCAPE_CHAR) {
+          const ch = escapedChars.shift();
+          result.push({ type: "text", content: ch });
+        } else {
+          // Accumulate consecutive normal chars to reduce tokens
+          let start = i;
+          while (i < s.length && s[i] !== ESCAPE_CHAR) i++;
+          i--;
+          const normalText = s.slice(start, i + 1);
+          result.push({ type: "text", content: normalText });
+        }
+      }
+      return result;
+    }
+
     // Regex patterns for "atomic" inline elements that can't be nested inside others
     const atomicPatterns = [
       { type: "image", regex: /!\[([^\]]*)\]\(([^)]+)\)/g },
@@ -134,9 +173,8 @@ function tokenizeUserInput(input) {
       { type: "subscript", markers: ["~"] },
       { type: "superscript", markers: ["^"] },
     ];
-    // Stack for iterative parsing of nested inline formatting
-    // Each frame holds remaining text to parse and current tokens to push to
-    const stack = [{ remainingText: text, tokens: inlineTokens }];
+
+    const stack = [{ remainingText: processedText, tokens: inlineTokens }];
 
     // Loop while there are frames to process on stack
     while (stack.length > 0) {
@@ -149,7 +187,7 @@ function tokenizeUserInput(input) {
 
         // Find earliest atomic match (image, link, or code)
         for (const { type, regex } of atomicPatterns) {
-          regex.lastIndex = 0; // Reset regex state for global search
+          regex.lastIndex = 0;
           const match = regex.exec(str);
           if (match) {
             if (!earliestAtomic || match.index < earliestAtomic.index) {
@@ -165,23 +203,16 @@ function tokenizeUserInput(input) {
           for (const marker of markers) {
             const startIndex = str.indexOf(marker);
             if (startIndex !== -1) {
-              // Look for corresponding closing marker after start marker
+              // Ensure closing marker exists and handle empty content for subscript/superscript
               const endIndex = str.indexOf(marker, startIndex + marker.length);
               if (endIndex !== -1) {
-                // Special handling for strikethrough to allow only "~~"
-                if (type === "strikethrough" && marker !== "~~") {
-                  // skip non "~~" strikethrough
-                  continue;
-                }
-                // For subscript and superscript (single char markers), ensure they are not immediately adjacent (non-empty content)
+                if (type === "strikethrough" && marker !== "~~") continue;
                 const innerLength = endIndex - (startIndex + marker.length);
                 if (
                   (type === "subscript" || type === "superscript") &&
                   innerLength === 0
-                ) {
-                  // empty content, skip
+                )
                   continue;
-                }
                 if (!earliestStyled || startIndex < earliestStyled.startIndex) {
                   earliestStyled = { type, marker, startIndex, endIndex };
                 }
@@ -204,12 +235,14 @@ function tokenizeUserInput(input) {
         // No more markdown patterns found, push remaining text as plain text
         if (!earliestMatch) {
           if (str.length > 0) {
-            tokensArr.push({ type: "text", content: str });
+            // Instead of pushing one big text token, split escaped characters back
+            const tokensWithEscapes = splitEscapesToTokens(str);
+            tokensArr.push(...tokensWithEscapes);
           }
           break;
         }
 
-        // Push any text before the earliest matched token as plain text
+        // Determine preText differently for atomic vs styled
         const preText =
           earliestMatch.type === "link" ||
           earliestMatch.type === "image" ||
@@ -218,7 +251,8 @@ function tokenizeUserInput(input) {
             : str.slice(0, earliestMatch.startIndex);
 
         if (preText.length > 0) {
-          tokensArr.push({ type: "text", content: preText });
+          const tokensWithEscapes = splitEscapesToTokens(preText);
+          tokensArr.push(...tokensWithEscapes);
         }
 
         // Handle the earliest matched inline element by type
@@ -233,7 +267,7 @@ function tokenizeUserInput(input) {
         } else if (earliestMatch.type === "link") {
           const linkText = earliestMatch.match[1];
           const href = earliestMatch.match[2];
-          // Create a link token, parse its text content recursively
+          // Create a link token, parse its text content
           const linkToken = { type: "link", content: [], href };
           tokensArr.push(linkToken);
           str = str.slice(earliestMatch.index + earliestMatch.match[0].length);
@@ -241,7 +275,7 @@ function tokenizeUserInput(input) {
           stack.push({ remainingText: str, tokens: tokensArr });
           // Parse link text content next
           stack.push({ remainingText: linkText, tokens: linkToken.content });
-          break; // Break to process the stack
+          stack.push({ remainingText: linkText, tokens: linkToken.content });
         } else if (earliestMatch.type === "code") {
           tokensArr.push({
             type: "code",
@@ -256,11 +290,9 @@ function tokenizeUserInput(input) {
           tokensArr.push(styledToken);
           // Remove processed styled token text from str
           str = str.slice(endIndex + marker.length);
-          // Push current remaining str back to stack for later processing
           stack.push({ remainingText: str, tokens: tokensArr });
           // Parse inner styled content next
           stack.push({ remainingText: innerText, tokens: styledToken.content });
-          break; // Break to process next stack frame
         }
       }
     }
