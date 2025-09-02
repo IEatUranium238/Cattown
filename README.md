@@ -167,7 +167,7 @@ import { returnHTML } from 'cattown';
 ## Development
 
 - Build: `npm run build`
-- Dev server: `npm run dev`
+- Dev server: `npm run dev` & open /demo
 - Test: `npm test`
 
 ## Browser Support
