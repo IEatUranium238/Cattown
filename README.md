@@ -1,6 +1,6 @@
 ![](cattownLogo.png)
 # Cattown
-[![NPM](https://nodei.co/npm/cattown.svg?style=shields&data=v)](https://nodei.co/npm/cattown/) [![NPM](https://nodei.co/npm/cattown.svg?style=shields&data=n)](https://nodei.co/npm/cattown/) [![NPM](https://nodei.co/npm/cattown.svg?style=shields&data=u)](https://nodei.co/npm/cattown/)
+![GitHub License](https://img.shields.io/github/license/IEatUranium238/Cattown) [![NPM](https://nodei.co/npm/cattown.svg?style=shields&data=v)](https://nodei.co/npm/cattown/) [![NPM](https://nodei.co/npm/cattown.svg?style=shields&data=n)](https://nodei.co/npm/cattown/) [![NPM](https://nodei.co/npm/cattown.svg?style=shields&data=u)](https://nodei.co/npm/cattown/)
 
 [![NPM](https://nodei.co/npm/cattown.svg?data=n)](https://nodei.co/npm/cattown/)
 
