@@ -17,7 +17,7 @@ A light, pure JavaScript markdown parser that transforms your markdown into clea
 ### Markdown Support
 
 #### Block Elements
-- Headers H1-H6 with proper hierarchy (because size matters).
+- Headers H1-H6 with proper hierarchy.
 - Paragraphs automatically wrapped for that neat look.
 - Fenced code blocks with language detection and cute syntax highlighting icons.
 - Lists galore: unordered, ordered, and task lists with checkboxes.
@@ -28,8 +28,6 @@ A light, pure JavaScript markdown parser that transforms your markdown into clea
 #### Inline Elements
 - Text formatting: bold, italic, bold+italic, strikethrough, highlight, subscript, superscript.
 - Smart links with auto HTTPS prefixing (because we don’t trust unsecured websites).
-- Responsive images that look good on all screens.
-- Inline code with pretty syntax highlighting.
 
 ### Customization & Theming
 - Dark Mode support in included css with `.ct-darkmode`, because your eyes deserve a break.
@@ -170,11 +168,6 @@ import { returnHTML } from 'cattown';
 
 ## Browser Support
 
-- Chrome 64+
-- Firefox 67+
-- Safari 12+
-- Edge 67+
-- Opera 51+
 - Not Internet Exploder (seriously, why?)
 
 ## Security
