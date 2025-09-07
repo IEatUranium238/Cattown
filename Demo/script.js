@@ -1,8 +1,9 @@
-import { setSettings } from "cattown";
-import returnHTML, { appendIntoElement, insertIntoElement, replaceIntoElement } from "cattown";
-import { setDOMPurify } from "cattown";
+import { setSettings } from "../src/cattownConfig";
+import returnHTML, { appendIntoElement, insertIntoElement, replaceIntoElement } from "../src/cattownMain";
+import { setDOMPurify } from "../src/cattownMain";
 import DOMpurify from 'dompurify';
 setDOMPurify(DOMpurify)
+setSettings('debugMode',true)
 
 const content = document.getElementById("result");
 const field = document.getElementById("input")

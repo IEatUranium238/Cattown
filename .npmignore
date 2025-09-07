@@ -23,6 +23,7 @@ coverage/
 CSSGuide.md
 SECURITY.md
 cattownLogo.png
+.github
 
 # npm pack result
 *.tgz
