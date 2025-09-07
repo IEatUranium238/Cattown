@@ -197,13 +197,7 @@ setDOMPurify(DOMPurify);
 
 ## Contributing
 
-Contributions welcome! Follow the usual dance:
-
-1. Fork it.
-2. Create a feature branch.
-3. Commit your changes.
-4. Push your branch.
-5. Open a PR.
+Contributions welcome! Please see [contributing](CONTRIBUTING.md).
 
 ## License
 
