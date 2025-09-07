@@ -61,6 +61,7 @@ function convertTokensToHTML(tokens) {
   const applyCustomStyle = getSettings("useCustomTheme");
   const useCodeLangName = getSettings("LanguageNameInCode");
   const useCodeIcon = getSettings("IconInCode");
+  const useAutoID = getSettings("autoHeadingID");
 
   /**
    * Converts inline markdown tokens into HTML strings with proper escaping.
@@ -344,7 +345,7 @@ function convertTokensToHTML(tokens) {
             applyCustomStyle
               ? ` class="ct-parsed heading heading-${level}"`
               : ""
-          }>${inlineTokensToHTML(token.content)}</h${level}>`;
+          } ${useAutoID ? `id="${inlineTokensToHTML(token.content).toLowerCase()}"`: ""}>${inlineTokensToHTML(token.content)}</h${level}>`;
         }
 
         case "paragraph":

@@ -27,7 +27,6 @@
  * - Content can be either strings or arrays of nested tokens
  */
 
-import getSettings from "./cattownConfig";
 
 /**
  * Converts raw markdown text into structured token objects.
@@ -68,9 +67,6 @@ import getSettings from "./cattownConfig";
 function tokenizeUserInput(input) {
   const lines = input.split("\n"); // Split input by lines for block-level parsing
   const tokens = [];
-
-  // Get settings
-  const useAutoID = getSettings("autoHeadingID");
 
   /**
    * Parses inline markdown elements using an iterative stack-based algorithm.
