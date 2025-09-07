@@ -1,6 +1,6 @@
 {
   "name": "cattown",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "A lightweight, pure JavaScript markdown parser with built-in HTML sanitization using DOMPurify. Converts markdown to clean, safe HTML with customizable styling.",
   "main": "./dist/index.js",
   "module": "./dist/index.js",

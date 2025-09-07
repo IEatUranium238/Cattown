@@ -663,14 +663,26 @@ function tokenizeUserInput(input) {
       continue;
     }
 
-    // Headings (# to ###### followed by space and text)
+    // Headings (# to ###### followed by space and text, optional {#id})
     const headingMatch = trimmed.match(/^(#{1,6})\s+(.*)$/);
     if (headingMatch) {
       const level = headingMatch[1].length;
+      let headingText = headingMatch[2];
+
+      // Check for optional id in the form {#custom-id} at the end
+      let id = null;
+      const idMatch = headingText.match(/\s*\{\#([a-zA-Z0-9\-_]+)\}\s*$/);
+      if (idMatch) {
+        id = idMatch[1];
+        // Remove the {#id} part from heading text before tokenizing inline
+        headingText = headingText.slice(0, idMatch.index).trim();
+      }
+
       tokens.push({
         megaType: "heading",
         level,
-        content: tokenizeInline(headingMatch[2]),
+        content: tokenizeInline(headingText),
+        ...(id ? { id } : {}),
       });
       continue;
     }

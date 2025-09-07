@@ -19,7 +19,7 @@ Basic CSS:
 Sass (.scss):  
 ``` SCSS
 .ct-parsed {
-  .heading {
+  &.heading {
     color: red; // Makes all headings red
   }
   // Add more styles here for elements
