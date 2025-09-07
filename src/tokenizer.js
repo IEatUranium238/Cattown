@@ -27,6 +27,8 @@
  * - Content can be either strings or arrays of nested tokens
  */
 
+import getSettings from "./cattownConfig";
+
 /**
  * Converts raw markdown text into structured token objects.
  *
@@ -66,6 +68,9 @@
 function tokenizeUserInput(input) {
   const lines = input.split("\n"); // Split input by lines for block-level parsing
   const tokens = [];
+
+  // Get settings
+  const useAutoID = getSettings("autoHeadingID");
 
   /**
    * Parses inline markdown elements using an iterative stack-based algorithm.
@@ -302,9 +307,8 @@ function tokenizeUserInput(input) {
           str = str.slice(earliestMatch.index + earliestMatch.match[0].length);
           // Push remaining string to process after this
           stack.push({ remainingText: str, tokens: tokensArr });
-          // Recursively tokenize the link text itself (nested)
+          // Parse link text content next
           stack.push({ remainingText: linkText, tokens: linkToken.content });
-          break; // Break loop to wait on new stack frames
         } else if (earliestMatch.type === "code") {
           // Inline code token
           tokensArr.push({

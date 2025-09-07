@@ -58,7 +58,15 @@ let config = {
    * Note: Only works when language is specified in code fence
    * Default: true
    */
-  IconInCode: true
+  IconInCode: true,
+
+  /**
+   * autoHeadingID (boolean): Adds ID to headings automatically by using their name as ID.
+   * - true: Adds ID automatically
+   * - false: Doesnt add ID automatically
+   * Default: true
+   */
+  autoHeadingID: true
 };
 
 /**
@@ -73,6 +81,7 @@ let config = {
  *   - 'enableSanitization': Enable/disable HTML sanitization
  *   - 'LanguageNameInCode': Show/hide language names in code blocks
  *   - 'IconInCode': Show/hide language icons in code blocks
+ *   - 'autoHeadingID': Enable/disable automatic heading IDs
  * @param {*} value - The new value to assign. Type should match the setting:
  *   - Boolean for all current settings
  * 
@@ -106,6 +115,7 @@ export function setSettings(setting, value) {
  *   - 'enableSanitization': Returns boolean for sanitization state
  *   - 'LanguageNameInCode': Returns boolean for language name display
  *   - 'IconInCode': Returns boolean for language icon display
+ *   - 'autoHeadingID': Returns boolean for automatic heading IDs
  * @returns {*} The current value of the setting, or undefined if setting doesn't exist.
  * 
  * @example

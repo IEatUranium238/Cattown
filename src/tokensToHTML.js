@@ -174,6 +174,7 @@ function convertTokensToHTML(tokens) {
           case "link": {
             let href = token.href || token.url || "";
             let linkContent = token.content || token.text || "";
+            console.log(href,linkContent)
             // Allow anchor links to pass without adding protocol, add https:// only for URLs without protocol that do not start with #
             if (href && !href.match(/^https?:\/\//) && !href.startsWith("#")) {
               href = "https://" + href;
