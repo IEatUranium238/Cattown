@@ -29,7 +29,7 @@ Contributions to Cattown are warmly welcome! Whether it's a bug fix, new feature
 
 ### Contribution Guidelines
 
-- Please follow the existing code style and conventions. (If available, see our [style guide](link-to-style-guide).)
+- Please follow the existing code style and conventions.
 - Keep commits focused and atomic for easier review.
 - Documentation updates are encouraged for any new features or significant changes.
 - Check for open issues or discussions related to your change to avoid duplicates.
