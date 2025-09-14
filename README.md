@@ -133,6 +133,7 @@ setSettings("IconInCode", false);
 |----------------------|---------|-------------------------------------|
 | `debugMode`          | false   | Logs details for developers           |
 | `enableSanitization` | true    | Keeps HTML safe from sketchy scripts |
+| `autoHeadingID`         | true    | Applies IDs to headings for links      |
 | `useCustomTheme`     | true    | Applies Cattown’s class for styling        |
 | `LanguageNameInCode` | true    | Shows language tags in code blocks    |
 | `IconInCode`         | true    | Shows those cute language icons       |

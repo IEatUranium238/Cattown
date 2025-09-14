@@ -3,6 +3,7 @@ import returnHTML, { appendIntoElement, insertIntoElement, replaceIntoElement } 
 import { setDOMPurify } from "cattown";
 import DOMpurify from 'dompurify';
 setDOMPurify(DOMpurify)
+setSettings('debugMode',true)
 
 const content = document.getElementById("result");
 const field = document.getElementById("input")

@@ -54,13 +54,14 @@ import getSettings from "./cattownConfig";
 function convertTokensToHTML(tokens) {
   // Handle null/undefined tokens gracefully
   if (!tokens || !Array.isArray(tokens)) {
-    return '';
+    return "";
   }
 
   // Get configuration settings for HTML generation behavior
   const applyCustomStyle = getSettings("useCustomTheme");
   const useCodeLangName = getSettings("LanguageNameInCode");
   const useCodeIcon = getSettings("IconInCode");
+  const useAutoID = getSettings("autoHeadingID");
 
   /**
    * Converts inline markdown tokens into HTML strings with proper escaping.
@@ -99,26 +100,26 @@ function convertTokensToHTML(tokens) {
   function inlineTokensToHTML(inlineTokens) {
     // Handle null/undefined tokens gracefully
     if (!inlineTokens) {
-      return '';
+      return "";
     }
-    
+
     // If inlineTokens is a string, treat it as a single text token
-    if (typeof inlineTokens === 'string') {
+    if (typeof inlineTokens === "string") {
       return escapeHTML(inlineTokens);
     }
-    
+
     // If inlineTokens is not an array, return empty string
     if (!Array.isArray(inlineTokens)) {
-      return '';
+      return "";
     }
-    
+
     return inlineTokens
       .map((token) => {
         // Handle null/undefined individual tokens
-        if (!token || typeof token !== 'object') {
-          return '';
+        if (!token || typeof token !== "object") {
+          return "";
         }
-        
+
         switch (token.type) {
           case "text":
             return escapeHTML(token.content);
@@ -171,11 +172,12 @@ function convertTokensToHTML(tokens) {
               `</sup>`
             );
 
-          case "link":
-            let href = token.href || token.url || '';
-            let linkContent = token.content || token.text || '';
-            // Checks if link has https:// in front, if no adds it.
-            if (href && !href.match(/^https?:\/\//)) {
+          case "link": {
+            let href = token.href || token.url || "";
+            let linkContent = token.content || token.text || "";
+            console.log(href,linkContent)
+            // Allow anchor links to pass without adding protocol, add https:// only for URLs without protocol that do not start with #
+            if (href && !href.match(/^https?:\/\//) && !href.startsWith("#")) {
               href = "https://" + href;
             }
             return (
@@ -185,13 +187,14 @@ function convertTokensToHTML(tokens) {
               inlineTokensToHTML(linkContent) +
               `</a>`
             );
+          }
 
           case "image":
-            let src = token.src || '';
-            let alt = token.alt || '';
-            return `<img src="${escapeAttribute(src)}" alt="${escapeAttribute(alt)}"${
-              applyCustomStyle ? ` class="ct-parsed image"` : ""
-            } />`;
+            let src = token.src || "";
+            let alt = token.alt || "";
+            return `<img src="${escapeAttribute(src)}" alt="${escapeAttribute(
+              alt
+            )}"${applyCustomStyle ? ` class="ct-parsed image"` : ""} />`;
 
           case "code":
             return (
@@ -274,9 +277,9 @@ function convertTokensToHTML(tokens) {
   function renderListItems(items, ordered) {
     // Handle undefined or null items
     if (!items || !Array.isArray(items)) {
-      return '';
+      return "";
     }
-    
+
     return items
       .map((item) => {
         const inlineHTML = inlineTokensToHTML(item.content);
@@ -329,19 +332,20 @@ function convertTokensToHTML(tokens) {
   return tokens
     .map((token) => {
       // Handle null/undefined individual tokens
-      if (!token || typeof token !== 'object') {
-        return '';
+      if (!token || typeof token !== "object") {
+        return "";
       }
-      
+
       switch (token.megaType) {
         case "heading": {
           // Clamp heading level between 1 and 6 for valid HTML tags
           const level = Math.min(Math.max(token.level, 1), 6);
-          return `<h${level}${
+          const idAttr = token.id ? ` id="${escapeAttribute(token.id)}"` : "";
+          return `<h${level}${idAttr}${
             applyCustomStyle
               ? ` class="ct-parsed heading heading-${level}"`
               : ""
-          }>${inlineTokensToHTML(token.content)}</h${level}>`;
+          } ${useAutoID ? `id="${inlineTokensToHTML(token.content).toLowerCase()}"`: ""}>${inlineTokensToHTML(token.content)}</h${level}>`;
         }
 
         case "paragraph":
@@ -350,20 +354,20 @@ function convertTokensToHTML(tokens) {
           }>${inlineTokensToHTML(token.content)}</p>`;
 
         case "blockquote":
-          let blockquoteContent = '';
+          let blockquoteContent = "";
           if (Array.isArray(token.content)) {
             blockquoteContent = convertTokensToHTML(token.content);
-          } else if (typeof token.content === 'string') {
+          } else if (typeof token.content === "string") {
             blockquoteContent = escapeHTML(token.content);
           } else {
-            blockquoteContent = '';
+            blockquoteContent = "";
           }
-          
+
           // Handle nested children (for nested blockquotes)
           if (token.children && Array.isArray(token.children)) {
             blockquoteContent += convertTokensToHTML(token.children);
           }
-          
+
           return `<blockquote${
             applyCustomStyle ? ` class="ct-parsed blockquote"` : ""
           }>${blockquoteContent}</blockquote>`;
@@ -397,16 +401,21 @@ function convertTokensToHTML(tokens) {
             }>\n${renderListItems(token.items, true)}\n</ol>`;
           } else {
             // Check if this is a task list (items have checked property)
-            const hasCheckedItems = token.items && token.items.some(item => 'checked' in item);
+            const hasCheckedItems =
+              token.items && token.items.some((item) => "checked" in item);
             if (hasCheckedItems) {
               // Task list: render checkbox input + inline content inside <li>
               return (
-                `<ul${applyCustomStyle ? ` class="ct-parsed tasklist"` : ""}>\n` +
+                `<ul${
+                  applyCustomStyle ? ` class="ct-parsed tasklist"` : ""
+                }>\n` +
                 (token.items || [])
                   .map(
                     (item) =>
                       `<li${
-                        applyCustomStyle ? ` class="ct-parsed tasklist-item"` : ""
+                        applyCustomStyle
+                          ? ` class="ct-parsed tasklist-item"`
+                          : ""
                       }>` +
                       `<input type="checkbox" disabled${
                         item.checked ? " checked" : ""
@@ -441,8 +450,8 @@ function convertTokensToHTML(tokens) {
             if (useCodeIcon && useCodeLangName) {
               iconHTML = `<img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/${lang.toLowerCase()}/${lang.toLowerCase()}-original.svg"
         alt="code icon"${
-                applyCustomStyle ? ` class="ct-parsed codeblock-image"` : ""
-              }`;
+          applyCustomStyle ? ` class="ct-parsed codeblock-image"` : ""
+        }`;
             }
 
             if (useCodeLangName) {
@@ -475,7 +484,7 @@ function convertTokensToHTML(tokens) {
         case "table": {
           const headerData = token.header || token.headers || [];
           const rowsData = token.rows || [];
-          
+
           const headerHTML = headerData
             .map(
               (cellTokens) =>
@@ -501,11 +510,16 @@ function convertTokensToHTML(tokens) {
                 `</tr>`
             )
             .join("\n");
-          
-          const tableHTML = `<table${applyCustomStyle ? ` class="ct-parsed table"` : ""}>`;
-          const theadHTML = headerData.length > 0 ? `<thead><tr>${headerHTML}</tr></thead>` : '';
+
+          const tableHTML = `<table${
+            applyCustomStyle ? ` class="ct-parsed table"` : ""
+          }>`;
+          const theadHTML =
+            headerData.length > 0
+              ? `<thead><tr>${headerHTML}</tr></thead>`
+              : "";
           const tbodyHTML = `<tbody>${rowsHTML}</tbody>`;
-          
+
           return `<div${
             applyCustomStyle ? ` class="ct-parsed table-container"` : ""
           }>${tableHTML}${theadHTML}${tbodyHTML}</table></div>`;

@@ -27,6 +27,7 @@
  * - Content can be either strings or arrays of nested tokens
  */
 
+
 /**
  * Converts raw markdown text into structured token objects.
  *
@@ -302,9 +303,8 @@ function tokenizeUserInput(input) {
           str = str.slice(earliestMatch.index + earliestMatch.match[0].length);
           // Push remaining string to process after this
           stack.push({ remainingText: str, tokens: tokensArr });
-          // Recursively tokenize the link text itself (nested)
+          // Parse link text content next
           stack.push({ remainingText: linkText, tokens: linkToken.content });
-          break; // Break loop to wait on new stack frames
         } else if (earliestMatch.type === "code") {
           // Inline code token
           tokensArr.push({
@@ -663,14 +663,26 @@ function tokenizeUserInput(input) {
       continue;
     }
 
-    // Headings (# to ###### followed by space and text)
+    // Headings (# to ###### followed by space and text, optional {#id})
     const headingMatch = trimmed.match(/^(#{1,6})\s+(.*)$/);
     if (headingMatch) {
       const level = headingMatch[1].length;
+      let headingText = headingMatch[2];
+
+      // Check for optional id in the form {#custom-id} at the end
+      let id = null;
+      const idMatch = headingText.match(/\s{0,10}\{\#([a-zA-Z0-9\-_]{1,50})\}\s{0,10}$/);
+      if (idMatch) {
+        id = idMatch[1];
+        // Remove the {#id} part from heading text before tokenizing inline
+        headingText = headingText.slice(0, idMatch.index).trim();
+      }
+
       tokens.push({
         megaType: "heading",
         level,
-        content: tokenizeInline(headingMatch[2]),
+        content: tokenizeInline(headingText),
+        ...(id ? { id } : {}),
       });
       continue;
     }
