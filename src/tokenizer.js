@@ -671,7 +671,7 @@ function tokenizeUserInput(input) {
 
       // Check for optional id in the form {#custom-id} at the end
       let id = null;
-      const idMatch = headingText.match(/\s*\{\#([a-zA-Z0-9\-_]{1,50})\}\s*$/);
+      const idMatch = headingText.match(/\s{0,10}\{\#([a-zA-Z0-9\-_]{1,50})\}\s{0,10}$/);
       if (idMatch) {
         id = idMatch[1];
         // Remove the {#id} part from heading text before tokenizing inline
