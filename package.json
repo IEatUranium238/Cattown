@@ -55,6 +55,7 @@
     "node": ">=14.0.0"
   },
   "dependencies": {
+    "cattown": "^1.0.2",
     "dompurify": "^3.2.6"
   },
   "devDependencies": {
